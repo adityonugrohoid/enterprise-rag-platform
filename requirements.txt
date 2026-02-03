@@ -38,3 +38,7 @@ passlib[bcrypt]
 
 # Monitoring
 prometheus-client
+
+# Frontend
+streamlit
+watchdog

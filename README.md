@@ -142,6 +142,31 @@ python scripts/test_rag_flow.py
 bash scripts/e2e_test.sh
 ```
 
+### Launch Streamlit UI
+
+For an interactive web interface with dual response comparison:
+
+```bash
+# Start the Streamlit UI
+bash scripts/start_ui.sh
+
+# Access at http://localhost:8501
+```
+
+**Streamlit UI Features:**
+- 🎨 ChatGPT/Claude-style interface with centered input
+- 📚 Multi-document selection and ingestion from sidebar
+- 🔄 Side-by-side comparison: Direct LLM vs RAG-enhanced responses
+- 📊 Real-time service health monitoring
+- 📁 Interactive document management
+- ⚡ Instant response time and source tracking
+
+The UI provides a visual way to:
+1. Select and ingest multiple documents at once
+2. Submit queries and see dual responses side-by-side
+3. Compare direct LLM output with RAG-enhanced answers
+4. View sources, chunks used, and response times
+
 ## ✅ Test Results
 
 The platform has been thoroughly tested with end-to-end integration tests. Below are the test results demonstrating successful RAG query processing:

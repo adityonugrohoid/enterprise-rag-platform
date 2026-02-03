@@ -1,0 +1,315 @@
+"""Streamlit UI for Enterprise RAG Platform."""
+import streamlit as st
+import sys
+from pathlib import Path
+
+# Add project root to path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root / "frontend"))
+
+from config import PAGE_TITLE, PAGE_ICON, LAYOUT
+from utils import (
+    scan_documents,
+    upload_document,
+    query_with_rag,
+    query_direct_llm,
+    check_services_health
+)
+
+# Page configuration
+st.set_page_config(
+    page_title=PAGE_TITLE,
+    page_icon=PAGE_ICON,
+    layout=LAYOUT,
+    initial_sidebar_state="expanded"
+)
+
+# Custom CSS for better styling
+st.markdown("""
+<style>
+    .main-header {
+        text-align: center;
+        padding: 2rem 0;
+    }
+    .submitted-query {
+        background-color: #e8f4f8;
+        border-left: 4px solid #1f77b4;
+        padding: 1rem 1.5rem;
+        border-radius: 0.5rem;
+        margin: 1.5rem 0;
+        color: #1f1f1f;
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+    .submitted-query-label {
+        font-size: 0.85rem;
+        color: #555;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+    .response-container {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin: 1rem 0;
+        color: #1f1f1f;
+    }
+    .direct-llm {
+        background-color: #f0f2f6;
+        border-left: 4px solid #4A90E2;
+        color: #1f1f1f;
+    }
+    .rag-enhanced {
+        background-color: #f0f2f6;
+        border-left: 4px solid #50C878;
+        color: #1f1f1f;
+    }
+    .metadata {
+        font-size: 0.85rem;
+        color: #555;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #ddd;
+    }
+    .status-indicator {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 5px;
+    }
+    .status-healthy {
+        background-color: #50C878;
+    }
+    .status-unhealthy {
+        background-color: #E74C3C;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Initialize session state
+if "ingested_docs" not in st.session_state:
+    st.session_state.ingested_docs = set()
+if "query_history" not in st.session_state:
+    st.session_state.query_history = []
+if "last_query" not in st.session_state:
+    st.session_state.last_query = None
+
+# Sidebar - Document Management
+with st.sidebar:
+    st.header("📚 Document Management")
+    
+    # Service health check
+    st.subheader("Service Status")
+    health = check_services_health()
+    
+    api_status = "🟢 Healthy" if health["api_gateway"] else "🔴 Unhealthy"
+    ollama_status = "🟢 Healthy" if health["ollama"] else "🔴 Unhealthy"
+    
+    st.write(f"**API Gateway:** {api_status}")
+    st.write(f"**Ollama:** {ollama_status}")
+    
+    if not all(health.values()):
+        st.warning("⚠️ Some services are not available. Please start all backend services.")
+    
+    st.divider()
+    
+    # Document selection
+    st.subheader("Available Documents")
+    available_docs = scan_documents()
+    
+    if not available_docs:
+        st.info("No documents found in data/documents/")
+    else:
+        st.write(f"Found {len(available_docs)} document(s)")
+        
+        # Multiselect for documents
+        selected_docs = st.multiselect(
+            "Select documents to ingest:",
+            options=available_docs,
+            help="Choose one or more documents to ingest into the RAG system"
+        )
+        
+        # Show ingestion status
+        if st.session_state.ingested_docs:
+            st.success(f"✅ {len(st.session_state.ingested_docs)} document(s) currently ingested")
+            with st.expander("View ingested documents"):
+                for doc in st.session_state.ingested_docs:
+                    st.write(f"- {doc}")
+        
+        # Ingest button
+        if st.button("🚀 Ingest Selected Documents", disabled=not selected_docs or not health["api_gateway"]):
+            if selected_docs:
+                with st.spinner("Ingesting documents..."):
+                    success_count = 0
+                    error_count = 0
+                    
+                    progress_bar = st.progress(0)
+                    status_text = st.empty()
+                    
+                    for i, doc in enumerate(selected_docs):
+                        status_text.text(f"Processing {doc}...")
+                        success, message, data = upload_document(doc)
+                        
+                        if success:
+                            success_count += 1
+                            st.session_state.ingested_docs.add(doc)
+                            chunks = data.get("chunks_created", 0)
+                            st.success(f"✅ {doc}: {chunks} chunks created")
+                        else:
+                            error_count += 1
+                            st.error(f"❌ {doc}: {message}")
+                        
+                        progress_bar.progress((i + 1) / len(selected_docs))
+                    
+                    status_text.empty()
+                    progress_bar.empty()
+                    
+                    if success_count > 0:
+                        st.success(f"Successfully ingested {success_count} document(s)")
+                    if error_count > 0:
+                        st.warning(f"Failed to ingest {error_count} document(s)")
+    
+    st.divider()
+    
+    # Clear ingestion status
+    if st.button("🗑️ Clear Ingestion Status"):
+        st.session_state.ingested_docs.clear()
+        st.rerun()
+    
+    # Information
+    with st.expander("ℹ️ How to use"):
+        st.markdown("""
+        **Steps:**
+        1. Check that services are healthy
+        2. Select documents to ingest
+        3. Click "Ingest Selected Documents"
+        4. Enter your query in the main area
+        5. Compare responses from both systems
+        
+        **Left Panel:** Direct LLM (no context)
+        **Right Panel:** RAG-enhanced (with document context)
+        """)
+
+# Main content area
+st.markdown("<h1 class='main-header'>🤖 Enterprise RAG Platform</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #666;'>Compare responses from direct LLM vs RAG-enhanced system</p>", unsafe_allow_html=True)
+
+# Check if services are available
+if not all(health.values()):
+    st.error("⚠️ Backend services are not running. Please start the services with: `bash scripts/start_services.sh`")
+    st.stop()
+
+# Check if documents are ingested
+if not st.session_state.ingested_docs:
+    st.info("💡 Please ingest documents from the sidebar to get started with RAG queries.")
+
+# Query input
+st.divider()
+
+# Create a form for query input
+with st.form(key="query_form", clear_on_submit=True):
+    col1, col2, col3 = st.columns([1, 6, 1])
+    
+    with col2:
+        query = st.text_input(
+            "Enter your question:",
+            placeholder="e.g., What are the 5G RAN performance targets?",
+            label_visibility="collapsed",
+            key="query_input"
+        )
+    
+    with col2:
+        submit_button = st.form_submit_button("🚀 Ask Both Systems", use_container_width=True)
+
+# Process query when submitted
+if submit_button and query:
+    # Store query in session state before form clears it
+    st.session_state.last_query = query
+
+# Display results if we have a last query
+if st.session_state.last_query:
+    st.divider()
+    
+    # Display the submitted query
+    st.markdown(f"""
+    <div class='submitted-query'>
+        <div class='submitted-query-label'>Your Question:</div>
+        {st.session_state.last_query}
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Create two columns for side-by-side comparison
+    col_left, col_right = st.columns(2)
+    
+    # Left column - Direct LLM
+    with col_left:
+        st.markdown("### 💬 Direct LLM Response")
+        st.markdown("<small style='color: #666;'>No document context, just the query</small>", unsafe_allow_html=True)
+        
+        with st.spinner("Querying Ollama..."):
+            success, response, metadata = query_direct_llm(st.session_state.last_query)
+        
+        if success:
+            st.markdown(f"""
+            <div class='response-container direct-llm'>
+                {response}
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Show metadata
+            elapsed = metadata.get("elapsed_time", 0)
+            model = metadata.get("model", "N/A")
+            st.markdown(f"""
+            <div class='metadata'>
+                <strong>Model:</strong> {model}<br>
+                <strong>Response Time:</strong> {elapsed:.2f}s
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.error(f"Error: {response}")
+    
+    # Right column - RAG Enhanced
+    with col_right:
+        st.markdown("### 🔍 RAG-Enhanced Response")
+        st.markdown("<small style='color: #666;'>With retrieved document context</small>", unsafe_allow_html=True)
+        
+        if not st.session_state.ingested_docs:
+            st.warning("⚠️ No documents ingested. The response will be based on general knowledge.")
+        
+        with st.spinner("Querying RAG system..."):
+            success, response, metadata = query_with_rag(st.session_state.last_query)
+        
+        if success:
+            st.markdown(f"""
+            <div class='response-container rag-enhanced'>
+                {response}
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Show metadata
+            elapsed = metadata.get("elapsed_time", 0)
+            sources = metadata.get("sources", [])
+            chunks = metadata.get("chunks_used", 0)
+            
+            sources_text = ", ".join(sources) if sources else "None"
+            
+            st.markdown(f"""
+            <div class='metadata'>
+                <strong>Sources:</strong> {sources_text}<br>
+                <strong>Chunks Used:</strong> {chunks}<br>
+                <strong>Response Time:</strong> {elapsed:.2f}s
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.error(f"Error: {response}")
+
+# Footer
+st.divider()
+st.markdown("""
+<div style='text-align: center; color: #666; font-size: 0.85rem; padding: 2rem 0;'>
+    <p>Enterprise RAG Platform | Built with Streamlit</p>
+    <p>Compare direct LLM responses with RAG-enhanced responses side-by-side</p>
+</div>
+""", unsafe_allow_html=True)

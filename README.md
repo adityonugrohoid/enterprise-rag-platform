@@ -2,8 +2,11 @@
 
 A Retrieval-Augmented Generation (RAG) platform designed for enterprise use cases. Currently running locally with open-source models via Ollama, featuring microservices architecture, multi-provider LLM support, and comprehensive document processing capabilities.
 
+![Streamlit UI Preview](assets/streamlit_dual.png)
+
 ## 🚀 Features
 
+- **Streamlit Web UI**: Interactive ChatGPT-style interface with side-by-side comparison of Direct LLM vs RAG-enhanced responses
 - **Microservices Architecture**: Scalable, independent services for ingestion, retrieval, query, and API gateway
 - **Multi-Provider LLM Support**: Seamlessly switch between Ollama, OpenAI, Anthropic, Azure, and Vertex AI
 - **Document Processing**: Support for TXT, PDF, and DOCX files with intelligent chunking
@@ -160,6 +163,11 @@ bash scripts/start_ui.sh
 - 📊 Real-time service health monitoring
 - 📁 Interactive document management
 - ⚡ Instant response time and source tracking
+
+**Screenshot:**
+
+![Streamlit UI - Dual Response Comparison](assets/streamlit_dual.png)
+*Side-by-side comparison of Direct LLM vs RAG-enhanced responses*
 
 The UI provides a visual way to:
 1. Select and ingest multiple documents at once

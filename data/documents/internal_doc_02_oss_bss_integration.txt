@@ -1,0 +1,385 @@
+# OSS/BSS Integration for Network Performance & SLA Management v1.5
+
+## 1. OVERVIEW
+
+### 1.1 System Architecture
+
+The OSS/BSS integration enables end-to-end visibility from network performance (OSS) to customer billing and SLA management (BSS).
+
+**Architecture Components:**
+```
+Network Elements (RAN, Core)
+    ↓
+OSS Layer (Network Management)
+    ├── KPI Collection (Huawei iManager, Cisco CiscoOne)
+    ├── Performance Monitoring
+    └── Fault Management
+    ↓
+OSS/BSS Integration Layer
+    ├── Data Transformation Engine
+    ├── SLA Calculation Engine
+    └── Credit Automation System
+    ↓
+BSS Layer (Business Support)
+    ├── Customer Portal
+    ├── Billing System
+    ├── SLA Dashboard
+    └── Credit Management
+```
+
+**Data Flow:**
+1. Network elements generate performance counters (every 15 minutes)
+2. OSS systems collect and aggregate KPIs (hourly/daily)
+3. Integration layer transforms OSS data to BSS format
+4. SLA engine calculates SLA compliance per customer
+5. Credit automation applies credits if SLA breached
+6. BSS displays SLA status and credits to customers
+
+### 1.2 Integration Objectives
+
+- Real-time SLA monitoring and alerting
+- Automated credit calculation and application
+- Customer self-service portal for SLA status
+- Proactive SLA breach prevention
+- Historical SLA trend analysis
+
+## 2. KPI DEFINITIONS & COLLECTION
+
+### 2.1 Network-Level KPIs
+
+**Accessibility KPIs:**
+
+| KPI | Formula | Target | Source |
+|---|---|---|---|
+| E2E Call Setup Success Rate | (Successful calls / Total attempts) × 100 | ≥99.5% | OSS: RACH + Attach counters |
+| RACH Success Rate | (Successful RACH / Total RACH attempts) × 100 | ≥99.0% | OSS: PRACH counters |
+| Attachment Success Rate | (Successful attachments / Total attempts) × 100 | ≥99.8% | OSS: NAS layer counters |
+
+**Retainability KPIs:**
+
+| KPI | Formula | Target | Source |
+|---|---|---|---|
+| E2E Call Drop Rate | (Dropped calls / Total calls) × 100 | ≤0.3% | OSS: RRC release counters |
+| Downlink Disconnection Rate | (DL disconnects / Total sessions) × 100 | ≤0.05% | OSS: PDCP layer counters |
+| RLC Layer Drop Rate | (RLC drops / Total RLC PDUs) × 100 | ≤0.2% | OSS: RLC layer counters |
+
+**Mobility KPIs:**
+
+| KPI | Formula | Target | Source |
+|---|---|---|---|
+| Handover Success Rate | (Successful HOs / Total HOs) × 100 | ≥98.0% | OSS: Handover event counters |
+| Inter-RAT HO Success Rate | (Successful IRAT HOs / Total IRAT HOs) × 100 | ≥97.0% | OSS: IRAT handover counters |
+| Failed HOs per 1000 | (Failed HOs / Total HOs) × 1000 | ≤20 | OSS: Handover failure counters |
+
+**Throughput KPIs:**
+
+| KPI | Formula | Target | Source |
+|---|---|---|---|
+| Average DL Throughput | Total DL bytes / Total time | ≥50 Mbps | OSS: PDCP throughput counters |
+| Peak Hour DL Throughput (p99) | 99th percentile DL throughput | ≥100 Mbps | OSS: Hourly throughput samples |
+| Average UL Throughput | Total UL bytes / Total time | ≥10 Mbps | OSS: PDCP throughput counters |
+
+**Latency KPIs:**
+
+| KPI | Formula | Target | Source |
+|---|---|---|---|
+| E2E Latency | Average RTT (UE to server) | ≤40 ms | OSS: Ping test results |
+| Uplink Latency | UL packet delay | ≤30 ms | OSS: UL delay measurements |
+
+### 2.2 RAN Performance KPIs
+
+**Per-Cell KPIs (collected every 15 minutes, aggregated hourly):**
+- Cell load (PRB utilization %)
+- Active users count
+- RSRP distribution (p50, p95, p99)
+- SINR distribution (p50, p95, p99)
+- Handover count (incoming, outgoing)
+- Drop count per cell
+
+**Per-Cluster KPIs (aggregated from cells):**
+- Cluster-level drop rate
+- Cluster-level throughput
+- Cluster-level handover success rate
+
+### 2.3 Data Collection Architecture
+
+**Collection Frequency:**
+- Real-time: Every 15 minutes (for alerting)
+- Hourly: Aggregated for dashboards
+- Daily: Aggregated for reports
+- Monthly: Aggregated for SLA calculation
+
+**Data Storage:**
+- OSS Database: Raw counters (15-min granularity, 90-day retention)
+- Data Warehouse: Aggregated KPIs (hourly/daily, 2-year retention)
+- BSS Database: Customer-specific SLA data (monthly, 5-year retention)
+
+**Data Transformation:**
+1. OSS counters → KPI formulas → Calculated KPIs
+2. Network KPIs → Customer mapping → Customer-specific KPIs
+3. Customer KPIs → SLA rules → SLA compliance status
+
+## 3. SLA MANAGEMENT & CREDIT AUTOMATION
+
+### 3.1 SLA Levels
+
+**Premium Customers:**
+- Network Availability: 99.99% monthly uptime
+- Call Success Rate: ≥99.5%
+- Call Drop Rate: ≤0.1%
+- Average DL Throughput: ≥50 Mbps
+- E2E Latency: ≤40 ms
+- MTTR (Priority 1): ≤4 hours
+- Monthly SLA Report: Detailed with root cause analysis
+
+**Standard Customers:**
+- Network Availability: 99.90% monthly uptime
+- Call Success Rate: ≥99.0%
+- Call Drop Rate: ≤0.3%
+- Average DL Throughput: ≥30 Mbps
+- E2E Latency: ≤50 ms
+- MTTR (Priority 1): ≤8 hours
+- Monthly SLA Report: Summary
+
+### 3.2 SLA Credit Calculation Algorithm
+
+**Step 1: SLA Compliance Check (Monthly)**
+```
+For each SLA metric:
+  - Calculate actual value from OSS data
+  - Compare with SLA target
+  - Mark as "Breached" if actual < target
+```
+
+**Step 2: Credit Calculation**
+
+**Network Availability Credit:**
+```
+If Availability < SLA Target:
+  Credit = (Monthly Service Fee) × (SLA Target - Actual Availability) × Credit Multiplier
+  
+Example:
+  Monthly Fee: $10,000
+  SLA Target: 99.99%
+  Actual: 99.95%
+  Credit Multiplier: 10x (for Premium)
+  
+  Credit = $10,000 × (99.99% - 99.95%) × 10
+         = $10,000 × 0.04% × 10
+         = $40
+```
+
+**Call Drop Rate Credit:**
+```
+If CDR > SLA Target:
+  Credit = (Monthly Service Fee) × (Actual CDR - SLA Target) × Credit Multiplier × 100
+  
+Example:
+  Monthly Fee: $10,000
+  SLA Target: ≤0.1%
+  Actual: 0.15%
+  Credit Multiplier: 5x (for Premium)
+  
+  Credit = $10,000 × (0.15% - 0.10%) × 5 × 100
+         = $10,000 × 0.05% × 5 × 100
+         = $250
+```
+
+**Throughput Credit:**
+```
+If Throughput < SLA Target:
+  Credit = (Monthly Service Fee) × (1 - Actual Throughput / SLA Target) × Credit Multiplier
+  
+Example:
+  Monthly Fee: $10,000
+  SLA Target: ≥50 Mbps
+  Actual: 40 Mbps
+  Credit Multiplier: 3x (for Premium)
+  
+  Credit = $10,000 × (1 - 40/50) × 3
+         = $10,000 × 0.2 × 3
+         = $6,000
+```
+
+**Step 3: Total Credit Calculation**
+```
+Total Credit = Sum of all individual metric credits
+Maximum Credit Cap = 50% of Monthly Service Fee (to prevent abuse)
+Final Credit = Min(Total Credit, Maximum Credit Cap)
+```
+
+**Step 4: Credit Application**
+- Credits applied automatically to next month's invoice
+- Customer notification sent via email
+- Credit details visible in customer portal
+
+### 3.3 Dispute Management
+
+**Customer Dispute Process:**
+1. Customer submits dispute via portal (within 30 days of invoice)
+2. BSS system retrieves OSS data for disputed period
+3. SLA engine recalculates compliance
+4. If dispute valid: Credit adjusted, customer notified
+5. If dispute invalid: Explanation provided with OSS data evidence
+
+**Dispute Resolution SLA:**
+- Acknowledgment: Within 24 hours
+- Resolution: Within 5 business days
+- Escalation: If unresolved after 5 days, escalate to Manager
+
+## 4. DASHBOARDS & MONITORING
+
+### 4.1 OSS Dashboard Displays
+
+**Real-Time Dashboard (30-minute refresh):**
+- Network-wide KPI summary (current vs. target)
+- Top 10 problem cells (by drop rate, failures)
+- Active alarms and alerts
+- Geographic heatmap (coverage, throughput, drop rate)
+
+**Historical Dashboard (Daily/Weekly/Monthly views):**
+- KPI trends (line charts)
+- SLA compliance trends
+- Customer impact analysis
+- Root cause analysis reports
+
+**Alert Configuration:**
+- KPI threshold breach: Email to NOC team
+- SLA breach risk: Email to Account Manager + Customer
+- Critical outage: SMS + Email to on-call engineer
+
+### 4.2 BSS/Customer Portal
+
+**Customer Dashboard Features:**
+1. **SLA Status Widget:**
+   - Current month SLA compliance (green/yellow/red indicators)
+   - Previous month SLA summary
+   - SLA target vs. actual (bar charts)
+
+2. **Performance Metrics:**
+   - Network availability (current month, YTD)
+   - Call success rate
+   - Average throughput
+   - Latency metrics
+
+3. **Credit History:**
+   - Monthly credit amounts
+   - Credit reason (which SLA metric breached)
+   - Applied credits on invoices
+
+4. **Incident History:**
+   - Past incidents affecting customer
+   - Incident duration and impact
+   - Root cause summaries
+
+5. **SLA Reports:**
+   - Downloadable monthly SLA reports (PDF)
+   - Historical SLA trends (12 months)
+   - Custom date range reports
+
+**Access Control:**
+- Customer Admin: Full access to all features
+- Customer User: Read-only access to dashboards
+- Customer Viewer: Limited access (SLA status only)
+
+## 5. INTEGRATION BEST PRACTICES
+
+### 5.1 Data Quality Assurance
+
+**Validation Rules:**
+1. OSS data completeness check: Ensure all counters collected
+2. Data sanity checks: KPI values within reasonable ranges
+3. Timestamp validation: Ensure data not stale (>1 hour old)
+4. Customer mapping validation: Ensure all customers mapped correctly
+
+**Error Handling:**
+- Missing data: Use last known value, flag as "estimated"
+- Invalid data: Exclude from calculation, log error
+- Data delay: Alert if data >1 hour old
+
+### 5.2 Performance Optimization
+
+**Caching Strategy:**
+- Real-time KPIs: Cache for 5 minutes
+- Hourly aggregates: Cache for 1 hour
+- Daily aggregates: Cache for 24 hours
+- Monthly SLA: Calculate once per day (at month end)
+
+**Database Optimization:**
+- Index on customer_id, timestamp for fast queries
+- Partition tables by month for historical data
+- Archive data older than 2 years to cold storage
+
+### 5.3 Security & Compliance
+
+**Data Privacy:**
+- Customer data encrypted at rest and in transit
+- Access logs maintained for audit
+- PII data redacted in reports
+
+**Compliance:**
+- GDPR: Customer data retention policies
+- SOX: Financial data (credits) audit trail
+- ISO 27001: Security controls for OSS/BSS integration
+
+### 5.4 Monitoring & Alerting
+
+**Integration Health Monitoring:**
+- OSS data collection latency: Alert if >15 minutes
+- BSS data sync latency: Alert if >5 minutes
+- SLA calculation job: Alert if fails or takes >1 hour
+- Credit application job: Alert if fails
+
+**Escalation:**
+- Level 1: Integration job failure → NOC Engineer
+- Level 2: SLA calculation failure → Senior Engineer
+- Level 3: Credit application failure → Manager + Finance
+
+## 6. IMPLEMENTATION CHECKLIST
+
+**Phase 1: OSS Integration (Week 1-2)**
+- [ ] Configure OSS systems for KPI export
+- [ ] Set up data collection pipeline
+- [ ] Validate KPI calculations
+- [ ] Test data transformation
+
+**Phase 2: BSS Integration (Week 3-4)**
+- [ ] Configure customer mapping
+- [ ] Set up SLA rules engine
+- [ ] Implement credit calculation
+- [ ] Test credit application
+
+**Phase 3: Portal Development (Week 5-6)**
+- [ ] Develop customer dashboard
+- [ ] Implement SLA reporting
+- [ ] Test user access controls
+- [ ] User acceptance testing
+
+**Phase 4: Production Deployment (Week 7-8)**
+- [ ] Production data migration
+- [ ] End-to-end testing
+- [ ] Customer communication
+- [ ] Go-live support
+
+## 7. MAINTENANCE & SUPPORT
+
+**Daily Tasks:**
+- Monitor integration health
+- Review SLA breach alerts
+- Validate credit calculations
+
+**Weekly Tasks:**
+- Review customer SLA reports
+- Analyze SLA trends
+- Optimize database queries
+
+**Monthly Tasks:**
+- Generate monthly SLA reports
+- Calculate and apply credits
+- Review and update SLA targets
+
+---
+**Document Owner:** OSS/BSS Integration Team
+**Last Updated:** 2026-01-31
+**Version:** 1.5
+**Distribution:** NOC, BSS Operations, Customer Success Teams

@@ -1,0 +1,303 @@
+# Network Performance Optimization Standards v3.2
+
+## 1. EXECUTIVE SUMMARY
+Mandatory standards for RAN deployments, KPI targets, monitoring requirements.
+
+## 2. NETWORK PERFORMANCE TARGETS
+
+### 2.1 5G RAN Performance Targets
+
+Accessibility KPIs:
+- E2E Call Setup Success Rate: ≥99.5% (target: 99.8%)
+- E2E RACH Success Rate: ≥99.0% (target: 99.5%)
+- Handover Success Rate: ≥98.0% (target: 99.2%)
+- NR Attachment Success Rate: ≥99.8%
+
+Retainability KPIs:
+- E2E Call Drop Rate: ≤0.3% (target: ≤0.1%)
+- NR RLC Layer Drop Rate: ≤0.2%
+- Downlink Disconnection Rate: ≤0.05%
+
+Mobility KPIs:
+- E2E Handover Success Rate: ≥98.0% (target: ≥99.2%)
+- Inter-RAT Handover (NR↔LTE) Success Rate: ≥97.0%
+- Failed Handovers per 1000 HOs: ≤20 (target: ≤8)
+
+Throughput & Latency:
+- Average DL Throughput: ≥50 Mbps (urban), ≥25 Mbps (suburban)
+- Peak Hour DL Throughput: ≥100 Mbps (99th percentile)
+- E2E Latency: ≤40 ms (target: ≤30 ms)
+- Uplink Latency: ≤30 ms
+
+### 2.2 LTE Performance Targets
+
+Accessibility:
+- E2E RACH Success Rate: ≥98.5% (target: 99.2%)
+- Attachment Success Rate: ≥99.5%
+- Handover Success Rate: ≥96.5% (target: 98.0%)
+
+Retainability:
+- Call Drop Rate: ≤0.5% (target: ≤0.2%)
+- Downlink Disconnection Rate: ≤0.1%
+
+Throughput:
+- Average DL Throughput: ≥30 Mbps (target: ≥45 Mbps)
+- 95th Percentile UL Throughput: ≥5 Mbps
+
+Coverage:
+- Coverage ≥99% of area
+- RSRP covered area: ≥-140 dBm
+
+### 2.3 4G VoLTE Quality Targets
+
+- Call Success Rate: ≥99.0%
+- Voice Quality MOS: ≥3.8 (target: ≥4.2)
+- One-Way Delay: ≤100 ms
+
+## 3. RAN OPTIMIZATION METHODOLOGY
+
+### 3.1 Optimization Phases
+
+Phase 1: Network Planning & Coverage
+- Baseline drive test (500+ km)
+- Coverage analysis & heatmap
+- Antenna optimization
+- Cell assignment review
+
+Phase 2: Parameter Optimization
+- Handover tuning (A3 event, A4/A5 thresholds)
+- Cell selection adjustment
+- Power control & interference management
+- Load balancing configuration
+
+Phase 3: Load Balancing & Capacity
+- Traffic pattern analysis
+- Load balancing config (LB_THRESHOLD, LB_HIGH_LOAD)
+- Cell congestion management
+- Capacity allocation
+
+Phase 4: Validation & Monitoring
+- Post-optimization drive test (300+ km)
+- Daily KPI dashboard monitoring
+- Customer complaint analysis
+- Automated alert configuration
+
+### 3.2 Optimization Parameters
+
+Coverage Optimization:
+- Antenna Tilt: Electrical + mechanical for coverage uniformity
+- Transmit Power: 46 dBm (typical), adjust ±3 dB
+- Antenna Azimuth: Orient per traffic demand & coverage gaps
+
+Handover Optimization:
+- A3 Offset: 0-6 dB (cell size dependent)
+- HysteresisA3: 0-4 dB (prevent ping-pong)
+- TimeToTriggerA3: 64-5120 ms (typical: 256 ms)
+- Handover Failure Threshold: ≥98%
+
+RSRP-based Cell Selection:
+- RsrpOffsetSServingCell: -15 to +15 dB
+- SIntraSearch: -∞ to -30 dBm
+
+Load Balancing Parameters:
+- ImbalanceThreshold: 5-20% (traffic imbalance trigger)
+- TargetLoadindicator: 50-80% (target per-cell load)
+
+## 4. MONITORING & REPORTING
+
+### 4.1 Real-Time Monitoring
+
+Daily KPI Monitoring:
+- OSS dashboard live updates (30-min aggregation)
+- Automated alerts for KPI threshold breaches
+- Email escalation if KPI drops >5% from baseline
+
+Weekly Reports:
+- Performance summary by cell/cluster
+- Top 10 problem cells (drop rate, call failures)
+- Comparison to weekly baseline
+
+Monthly Reviews:
+- Comprehensive KPI analysis with trends
+- RCA for degradations >10%
+- Optimization action items
+- Vendor performance scorecard
+
+### 4.2 Monitoring Tools
+
+OSS Systems:
+- Huawei iManager U2000 (RAN management, KPI collection)
+- Cisco CiscoOne (network automation, analytics)
+- Custom Python dashboards (real-time KPI display)
+
+Drive Test Tools:
+- Nemo/TEMS (Nokia test drive system)
+- Acceris (post-processing, heatmap generation)
+- Qwest Pro (5G/LTE specialized analysis)
+
+## 5. TROUBLESHOOTING & ROOT CAUSE ANALYSIS
+
+### 5.1 High Call Drop Rate (>0.5%)
+
+Typical Causes:
+1. Excessive RLC retransmissions (>20%) → Check TX power, interference
+2. Handover failures → Check parameters, coverage gaps
+3. Uplink power control issues → Check UL allocation
+4. Cell border problems → Adjust tilt, power, HO params
+
+Troubleshooting Steps:
+1. Compare current vs baseline KPIs
+2. Identify affected cells (geographic area)
+3. Check weather & time-of-day correlation
+4. Review recent optimization changes
+5. Run focused drive test in affected area
+6. Analyze radio traces for root cause
+7. Implement fix, validate with follow-up drive test
+
+### 5.2 Low Throughput (<30 Mbps)
+
+Typical Causes:
+1. Cell congestion → Implement load balancing
+2. Poor SINR → Increase TX power, adjust interference
+3. Scheduler inefficiency → Check scheduler params
+4. Excessive retransmissions → Check link adaptation
+
+### 5.3 High Handover Failure Rate (>2%)
+
+Typical Causes:
+1. Incorrect A3 offset → Too aggressive or too conservative
+2. Coverage gaps → Increase antenna tilt overlap
+3. Unstable signal variations → Add antenna diversity
+4. Parameter mismatch → Synchronize across cells
+
+## 6. COMPLIANCE & SLA REQUIREMENTS
+
+### 6.1 SLA Targets by Service Type
+
+Premium Customers:
+- Network Availability: 99.99% monthly uptime
+- Call Success Rate: ≥99.5%
+- Call Drop Rate: ≤0.1%
+- MTTR (Priority 1): ≤4 hours
+
+Standard Customers:
+- Network Availability: 99.90% monthly uptime
+- Call Success Rate: ≥99.0%
+- Call Drop Rate: ≤0.3%
+- MTTR (Priority 1): ≤8 hours
+
+### 6.2 Incident Classification
+
+Priority 1 (Critical):
+- Cluster-wide outage or massive KPI degradation (>20%)
+- Affects >10,000 subscribers
+- MTTR: ≤2 hours, VP escalation
+
+Priority 2 (High):
+- Regional KPI degradation (5-20%)
+- Affects 1,000-10,000 subscribers
+- MTTR: ≤4 hours, Manager escalation
+
+Priority 3 (Medium):
+- Isolated cell issues (<5% impact)
+- Affects <1,000 subscribers
+- MTTR: ≤24 hours
+
+## 7. OPTIMIZATION CHANGE MANAGEMENT
+
+### 7.1 Change Control Board (CCB)
+
+All optimization changes must:
+1. Have clear baseline KPI measurements (pre-change)
+2. Include risk assessment & rollback plan
+3. Be tested in lab or limited test network
+4. Be approved by CCB (Optimization Manager + Network Planner)
+5. Have post-implementation validation (24-72 hours)
+
+Prohibited Without Senior Approval:
+- Network-wide parameter changes
+- Major antenna reorientation
+- Capacity reduction >10%
+- QoS policy changes
+
+### 7.2 Testing Requirements
+
+- Lab simulation or field trial in non-critical area
+- Minimum 24-hour monitoring window
+- KPI validation: ≥5% improvement or zero degradation
+- Rollback tested and ready
+
+## 8. BEST PRACTICES & GUIDELINES
+
+### 8.1 Drive Test Best Practices
+
+- Minimum 500 km baseline, 300 km post-optimization
+- Peak and off-peak hour coverage
+- GPS accuracy with RTK (Real-Time Kinematic)
+- Consistent route & timing for comparisons
+- Minimum 30 minutes per cell cluster
+
+### 8.2 Interference Mitigation
+
+- Coordinate frequency assignments with neighboring operators
+- Use power control & antenna patterns to minimize interference
+- Monitor eNB interference margin (>-104 dBm)
+- Implement Fractional Frequency Reuse (FFR) in congested areas
+
+### 8.3 Network Capacity Planning
+
+- Forecast traffic growth (20% YoY typical)
+- Plan upgrades 6-12 months ahead
+- Use spectral efficiency models for capacity estimation
+- Reserve 20% headroom for peak traffic
+
+## 9. EMERGENCY PROCEDURES
+
+### 9.1 Major Outage Response
+
+1. (0-5 min) Activate incident bridge, declare severity level
+2. (5-15 min) Identify affected area, check common failures
+3. (15-60 min) Isolation: disable/restart cells, redirect traffic
+4. (1-4 hrs) RCA, fix implementation
+5. (Post) Post-mortem, RCA documentation, preventive measures
+
+### 9.2 Escalation Matrix
+
+- Level 1 (NOC Engineer): Response <15 min
+- Level 2 (Senior Engineer): Escalation if L1 unresolved >30 min
+- Level 3 (Manager): Escalation if L2 unresolved >1 hour
+- VP Level: All Priority 1 issues after 2 hours
+
+## 10. OPTIMIZATION DOCUMENTATION
+
+Every optimization activity must document:
+1. Baseline KPI snapshot (pre-change)
+2. Changes implemented (parameters, values)
+3. Rationale/expected impact
+4. Drive test results (if applicable)
+5. Post-implementation KPI (24-72 hours)
+6. Issues encountered & resolutions
+7. CCB sign-off
+
+## Appendix A: KPI Glossary
+
+| Abbreviation | Full Name | Formula | Target |
+|---|---|---|---|
+| RACH_SR | RACH Success Rate | Successful RACH / Total attempts | ≥99.0% |
+| E2E_CDR | Call Drop Rate | Dropped / Total calls | ≤0.3% |
+| HO_SR | Handover Success Rate | Successful HOs / Total HOs | ≥98.0% |
+| DL_TP | Downlink Throughput | Data delivered / Duration | ≥50 Mbps |
+| SINR | Signal-to-Interference | Signal power / Interference | ≥0 dB |
+
+## Appendix B: Contact Information
+
+Network Optimization Team:
+- Optimization Manager: optimization.manager@company.com
+- RAN Planning: ran.planning@company.com
+- OSS Operations: oss.operations@company.com
+
+Change Control Board: Weekly, Tuesdays 10:00 AM
+
+---
+**Document Distribution:** NOC, RAN Planning, Network Optimization teams
+**Next Review:** 2026-06-15

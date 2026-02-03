@@ -1,0 +1,110 @@
+"""Universal LLM client supporting multiple providers."""
+from typing import Optional, Literal
+from openai import OpenAI
+import os
+import logging
+
+logger = logging.getLogger(__name__)
+
+LLMProvider = Literal["ollama", "openai", "azure", "anthropic", "vertex"]
+
+
+class UniversalLLMClient:
+    """Provider-agnostic LLM client following OpenAI standards"""
+    
+    def __init__(
+        self, 
+        provider: LLMProvider = "ollama",
+        model: Optional[str] = None,
+        **kwargs
+    ):
+        self.provider = provider
+        
+        if provider == "ollama":
+            host = kwargs.get("host", os.getenv("OLLAMA_HOST", "http://localhost:11434"))
+            # Use httpx directly for Ollama to avoid OpenAI client compatibility issues
+            import httpx
+            self._ollama_host = host
+            self._use_httpx = True
+            self.client = None  # Will use httpx instead
+            self.model = model or os.getenv("LLM_MODEL", "llama3.2:3b")
+            
+        elif provider == "openai":
+            self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+            self.model = model or "gpt-4o-mini"
+            
+        elif provider == "azure":
+            from openai import AzureOpenAI
+            self.client = AzureOpenAI(
+                azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+                api_key=os.getenv("AZURE_OPENAI_KEY"),
+                api_version="2024-02-01"
+            )
+            self.model = model or "gpt-4"
+            
+        elif provider == "anthropic":
+            import anthropic
+            self.client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+            self.model = model or "claude-3-5-sonnet-20241022"
+            
+        elif provider == "vertex":
+            # Use LiteLLM for unified interface
+            import litellm
+            self.client = litellm
+            self.model = f"vertex_ai/{model or 'gemini-1.5-flash'}"
+        
+        logger.info(f"Initialized LLM client: {provider} with model {self.model}")
+    
+    def chat(
+        self,
+        messages: list[dict],
+        temperature: float = 0.2,
+        max_tokens: int = 1024,
+        **kwargs
+    ) -> str:
+        """Unified chat interface across providers"""
+        
+        if self.provider == "ollama" and hasattr(self, "_use_httpx") and self._use_httpx:
+            # Use httpx directly for Ollama
+            import httpx
+            response = httpx.post(
+                f"{self._ollama_host}/v1/chat/completions",
+                json={
+                    "model": self.model,
+                    "messages": messages,
+                    "temperature": temperature,
+                    "max_tokens": max_tokens
+                },
+                timeout=60.0
+            )
+            response.raise_for_status()
+            return response.json()["choices"][0]["message"]["content"]
+        
+        if self.provider == "anthropic":
+            # Anthropic uses different message format
+            response = self.client.messages.create(
+                model=self.model,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens
+            )
+            return response.content[0].text
+        
+        elif self.provider == "vertex":
+            response = self.client.completion(
+                model=self.model,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens
+            )
+            return response.choices[0].message.content
+        
+        else:  # OpenAI-compatible (ollama, openai, azure)
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                **kwargs
+            )
+            return response.choices[0].message.content

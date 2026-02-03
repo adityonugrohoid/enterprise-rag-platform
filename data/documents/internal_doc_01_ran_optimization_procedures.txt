@@ -1,0 +1,365 @@
+# RAN Optimization Procedures & Workflows v2.1
+
+## 1. RAN OPTIMIZATION WORKFLOW
+
+### 1.1 Pre-Optimization Phase
+
+**Baseline Data Collection:**
+1. OSS KPI extraction (7-14 days historical data)
+   - Collect: RACH_SR, E2E_CDR, HO_SR, DL_TP, UL_TP, SINR
+   - Export hourly/daily aggregates per cell
+   - Identify baseline percentiles (p50, p95, p99)
+
+2. Drive Test Execution
+   - Route planning: Cover all cell boundaries, high-traffic areas
+   - Minimum 500 km baseline drive test
+   - Test during peak hours (8-10 AM, 5-7 PM) and off-peak
+   - Record: RSRP, RSRQ, SINR, throughput, handover events
+   - GPS accuracy: RTK-enabled for precise location mapping
+
+3. OSS Analysis
+   - Identify top 10 problem cells (by drop rate, failures)
+   - Traffic pattern analysis (hourly, daily, weekly trends)
+   - Interference analysis (neighbor cell overlap, frequency conflicts)
+   - Load distribution analysis (identify congested cells)
+
+4. Root Cause Analysis (RCA)
+   - Compare current KPIs vs. baseline/targets
+   - Identify correlation patterns (time-of-day, weather, events)
+   - Review recent network changes (parameter updates, new sites)
+   - Document findings in RCA template
+
+**Deliverables:**
+- Baseline KPI report (Excel/PDF)
+- Drive test heatmaps (coverage, throughput, SINR)
+- Problem cell list with RCA findings
+- Optimization proposal document
+
+### 1.2 Optimization Phase
+
+**Parameter Tuning Process:**
+
+**Step 1: Coverage Optimization**
+- Analyze drive test heatmaps for coverage gaps
+- Adjust antenna tilt (mechanical ±5°, electrical ±3°)
+- Optimize transmit power (typical range: 43-49 dBm)
+- Reorient antenna azimuth if needed (increments of 10°)
+- Example: If RSRP < -120 dBm in area, increase TX power by 2 dB
+
+**Step 2: Handover Optimization**
+- Review handover failure locations from drive test
+- Adjust A3 Offset based on cell size:
+  - Small cells (<500m radius): 0-2 dB
+  - Medium cells (500m-1km): 2-4 dB
+  - Large cells (>1km): 4-6 dB
+- Set HysteresisA3: 2-4 dB (prevent ping-pong)
+- Configure TimeToTriggerA3: 256 ms (typical), increase to 512 ms if unstable
+- Validate: HO_SR should improve by ≥2% within 24 hours
+
+**Step 3: Load Balancing**
+- Identify congested cells (load >80%)
+- Configure ImbalanceThreshold: 10-15% (trigger load balancing)
+- Set TargetLoadindicator: 60-70% (target per-cell load)
+- Enable inter-frequency load balancing if available
+- Monitor: Load distribution should be within ±10% across cells
+
+**Step 4: Cell Selection Optimization**
+- Adjust RsrpOffsetSServingCell: -10 to +10 dB (based on coverage needs)
+- Configure SIntraSearch: -30 dBm (start intra-frequency search)
+- Optimize for cell edge users: Increase offset if edge users have poor performance
+
+**Implementation:**
+1. Create change ticket in OSS system
+2. Schedule maintenance window (if required)
+3. Apply changes to test cells first (5-10 cells)
+4. Monitor for 24-48 hours
+5. If successful, roll out to remaining cells
+6. Document all parameter changes in change log
+
+### 1.3 Post-Optimization Phase
+
+**Validation:**
+1. Post-optimization drive test (minimum 300 km)
+   - Same routes as baseline for comparison
+   - Compare: RSRP improvement, throughput increase, drop rate reduction
+   - Generate before/after heatmaps
+
+2. KPI Monitoring (7-14 days)
+   - Daily KPI dashboard review
+   - Compare post-opt KPIs vs. baseline
+   - Target improvements:
+     - E2E_CDR: ≥20% reduction
+     - HO_SR: ≥2% improvement
+     - DL_TP: ≥10% improvement
+
+3. Customer Complaint Analysis
+   - Review customer complaints (call drops, slow data)
+   - Verify if complaints reduced in optimized areas
+   - Track complaint resolution time
+
+**Continuous Monitoring:**
+- Automated alerts configured for KPI threshold breaches
+- Weekly optimization review meetings
+- Monthly performance reports
+- Quarterly comprehensive optimization cycle
+
+## 2. TROUBLESHOOTING FLOWCHARTS
+
+### 2.1 Call Setup Failures (Low RACH Success Rate)
+
+**Flowchart:**
+```
+START: RACH_SR < 99.0%
+  ↓
+Check OSS: RACH attempts vs. successes per cell
+  ↓
+Identify affected cells (geographic clustering?)
+  ↓
+Check RACH configuration:
+  - PRACH power ramping step (increase if too low)
+  - PRACH preamble format (verify compatibility)
+  - RACH resource allocation (check if sufficient)
+  ↓
+Check interference:
+  - Neighbor cell interference on PRACH resources
+  - External interference (scanner measurement)
+  ↓
+Check coverage:
+  - RSRP at cell edge (< -120 dBm?)
+  - Uplink power headroom (UE max power reached?)
+  ↓
+Actions:
+  - Increase PRACH power: +2 dB
+  - Adjust antenna tilt to improve coverage
+  - Resolve interference (frequency planning, power adjustment)
+  ↓
+Validate: RACH_SR should improve to ≥99.0% within 24 hours
+  ↓
+END
+```
+
+**Common Solutions:**
+- PRACH power too low → Increase PRACH power by 2-3 dB
+- Coverage gap → Adjust antenna tilt, increase TX power
+- Interference → Frequency replanning, neighbor optimization
+
+### 2.2 Call Drop Rate Spike
+
+**Flowchart:**
+```
+START: E2E_CDR > 0.5% (spike detected)
+  ↓
+Check time correlation: When did spike start?
+  - Recent network change? (parameter update, new site)
+  - Weather event? (rain, wind affecting antennas)
+  - Special event? (concert, sports event causing congestion)
+  ↓
+Check OSS: RLC retransmission rate
+  - If >20%: Radio link quality issue
+    → Check SINR, interference, TX power
+  ↓
+Check handover failures:
+  - HO failure rate >2%?
+    → Check HO parameters (A3 offset, hysteresis)
+    → Check coverage gaps at cell borders
+  ↓
+Check uplink issues:
+  - UL power headroom <0 dB?
+    → Check UL power control parameters
+    → Check cell load (congestion?)
+  ↓
+Check cell border problems:
+  - Drive test at cell borders
+  - Identify ping-pong handovers
+  - Adjust tilt, power, HO parameters
+  ↓
+Root Cause Identified:
+  - Radio link quality → Increase TX power, reduce interference
+  - Handover failures → Optimize HO parameters
+  - Congestion → Implement load balancing
+  ↓
+Implement fix, monitor for 24-48 hours
+  ↓
+Validate: E2E_CDR should return to ≤0.3%
+  ↓
+END
+```
+
+**Quick Actions:**
+1. If RLC retransmissions >20%: Increase TX power by 2 dB
+2. If HO failures >2%: Adjust A3 offset, increase hysteresis
+3. If congestion: Enable load balancing, add capacity
+
+### 2.3 Low Throughput
+
+**Flowchart:**
+```
+START: DL_TP < 30 Mbps (or UL_TP < 5 Mbps)
+  ↓
+Check cell load:
+  - If load >80%: Congestion issue
+    → Implement load balancing
+    → Add capacity (carrier aggregation, new carrier)
+  ↓
+Check SINR:
+  - If SINR < 0 dB: Poor signal quality
+    → Increase TX power
+    → Adjust antenna tilt for better coverage
+    → Reduce interference (frequency planning)
+  ↓
+Check scheduler efficiency:
+  - Review scheduler parameters (proportional fair, round robin)
+  - Check if MIMO configured correctly
+  - Verify carrier aggregation enabled
+  ↓
+Check retransmissions:
+  - If retransmission rate >15%: Link adaptation issue
+    → Adjust CQI reporting
+    → Optimize link adaptation parameters
+  ↓
+Check UE capability:
+  - Verify UE supports required features (CA, MIMO)
+  - Check if UE is in good condition (not faulty device)
+  ↓
+Actions:
+  - Congestion: Load balancing, capacity expansion
+  - Poor SINR: Coverage optimization, interference reduction
+  - Scheduler: Parameter tuning, feature enablement
+  ↓
+Validate: Throughput should improve by ≥20% within 48 hours
+  ↓
+END
+```
+
+## 3. COMMON OPTIMIZATION SCENARIOS
+
+### 3.1 Weekend Peak Hour Congestion
+
+**Scenario:** Cell cluster experiences congestion every Saturday 2-4 PM, causing high drop rate and low throughput.
+
+**Short-term Solution (1-2 weeks):**
+1. Enable aggressive load balancing (ImbalanceThreshold: 5%)
+2. Increase handover hysteresis to offload traffic to neighboring cells
+3. Temporarily increase TX power to improve coverage overlap
+4. Result: Immediate relief, but may cause interference
+
+**Medium-term Solution (1-3 months):**
+1. Add carrier aggregation (if spectrum available)
+2. Deploy small cells in high-traffic areas
+3. Optimize antenna patterns for better coverage distribution
+4. Result: Sustainable capacity increase
+
+**Long-term Solution (6-12 months):**
+1. Deploy new macro site in congested area
+2. Spectrum refarming (reallocate spectrum from low-traffic areas)
+3. 5G deployment (if applicable)
+4. Result: Long-term capacity solution
+
+### 3.2 Cell Border Ping-Pong Handovers
+
+**Scenario:** Frequent handovers between two cells causing call drops and poor user experience.
+
+**Solution:**
+1. Drive test to identify exact border location
+2. Adjust antenna tilt: Increase overlap by 2-3° (both cells)
+3. Adjust A3 offset: Increase by 1-2 dB (less aggressive handover)
+4. Increase HysteresisA3: 3-4 dB (prevent ping-pong)
+5. Increase TimeToTriggerA3: 512 ms (more stable)
+6. Validate: Handover count should reduce by ≥30%, HO_SR should improve
+
+### 3.3 Coverage Gap in Suburban Area
+
+**Scenario:** New residential area has poor coverage (RSRP < -120 dBm), causing call failures.
+
+**Solution:**
+1. Identify coverage gap location (drive test, customer complaints)
+2. Adjust nearest cell antenna:
+   - Increase tilt down by 2-3° (extend coverage)
+   - Increase TX power by 2-3 dB
+   - Adjust azimuth toward gap area
+3. If insufficient, deploy small cell or repeater
+4. Validate: RSRP should improve to ≥ -110 dBm in gap area
+
+## 4. PARAMETER REFERENCE TABLE
+
+| Parameter | Typical Range | Default | Optimization Impact |
+|---|---|---|---|
+| **Coverage** |
+| TX Power | 43-49 dBm | 46 dBm | ±3 dB: Coverage ±200m |
+| Antenna Tilt (Mech) | 0-15° | 6° | ±1°: Coverage ±100m |
+| Antenna Tilt (Elec) | 0-10° | 3° | ±1°: Coverage ±50m |
+| **Handover** |
+| A3 Offset | 0-6 dB | 2 dB | ±1 dB: HO trigger ±50m |
+| HysteresisA3 | 0-4 dB | 2 dB | ±1 dB: Ping-pong reduction |
+| TimeToTriggerA3 | 64-5120 ms | 256 ms | 2x: More stable, slower HO |
+| **Load Balancing** |
+| ImbalanceThreshold | 5-20% | 10% | Lower: More aggressive |
+| TargetLoadindicator | 50-80% | 65% | Target per-cell load |
+| **Cell Selection** |
+| RsrpOffsetSServingCell | -15 to +15 dB | 0 dB | Positive: Prefer this cell |
+| SIntraSearch | -∞ to -30 dBm | -30 dBm | Start intra-freq search |
+
+## 5. ESCALATION CRITERIA
+
+**Level 1 (NOC Engineer) - Immediate Response:**
+- Single cell outage
+- KPI degradation <5%
+- Response time: <15 minutes
+
+**Level 2 (Senior Engineer) - Escalation Required:**
+- Cluster-wide issues (3-10 cells)
+- KPI degradation 5-10%
+- Unresolved after 30 minutes
+- Response time: <1 hour
+
+**Level 3 (Manager) - High Priority:**
+- Regional issues (>10 cells)
+- KPI degradation 10-20%
+- Unresolved after 1 hour
+- Response time: <2 hours
+
+**VP Level - Critical:**
+- Network-wide issues
+- KPI degradation >20%
+- Affects >10,000 subscribers
+- Unresolved after 2 hours
+- Response time: Immediate
+
+## 6. DRIVE TEST DATA SHEET TEMPLATE
+
+**Drive Test Information:**
+- Date: _______________
+- Time: _______________ (Start) to _______________ (End)
+- Route: _______________
+- Total Distance: _______________ km
+- Weather: _______________
+- Tester: _______________
+
+**Equipment:**
+- Test UE Model: _______________
+- Test Software: _______________
+- GPS Accuracy: _______________
+
+**Key Metrics Collected:**
+- RSRP (dBm): Min ______, Max ______, Avg ______
+- RSRQ (dB): Min ______, Max ______, Avg ______
+- SINR (dB): Min ______, Max ______, Avg ______
+- DL Throughput (Mbps): Min ______, Max ______, Avg ______
+- UL Throughput (Mbps): Min ______, Max ______, Avg ______
+- Handover Events: Total ______, Successful ______, Failed ______
+- Call Drops: Count ______
+
+**Issues Identified:**
+1. ________________________________________________
+2. ________________________________________________
+3. ________________________________________________
+
+**Recommendations:**
+1. ________________________________________________
+2. ________________________________________________
+3. ________________________________________________
+
+---
+**Document Owner:** RAN Optimization Team
+**Last Updated:** 2026-01-31
+**Version:** 2.1

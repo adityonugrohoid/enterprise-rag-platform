@@ -1,0 +1,363 @@
+# Enterprise RAG Platform - .gitignore
+#
+# This file specifies intentionally untracked files that Git should ignore.
+# Files already tracked by Git are not affected.
+#
+# Common patterns:
+# - Python virtual environments and cache
+# - Environment files with secrets
+# - Data directories (ChromaDB, MinIO, Redis)
+# - Model cache (Ollama models - very large)
+# - Log files
+# - IDE and OS-specific files
+#
+# Note: .gitkeep files are explicitly allowed to preserve directory structure
+
+# ============================================
+# Python
+# ============================================
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+.ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# ============================================
+# Environment & Secrets
+# ============================================
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+*.key
+*.pem
+*.p12
+*.json.key
+service-account*.json
+credentials.json
+secrets/
+
+# ============================================
+# Data & Storage
+# ============================================
+# ChromaDB data (ignore all, then allow .gitkeep)
+data/chroma/*
+!data/chroma/.gitkeep
+
+# MinIO data
+data/minio/*
+!data/minio/.gitkeep
+
+# Redis data
+data/redis/*
+!data/redis/.gitkeep
+
+# Model cache (Ollama models - very large)
+models/*
+!models/.gitkeep
+
+# Backups
+backups/
+*.backup
+*.bak
+*.tar.gz
+*.zip
+!skills/*.zip  # Keep skill zip files
+
+# ============================================
+# Logs
+# ============================================
+logs/*
+*.log
+*.log.*
+*.out
+*.err
+log/
+# But keep .gitkeep files
+!logs/.gitkeep
+
+# ============================================
+# IDE & Editors
+# ============================================
+# VS Code
+.vscode/
+*.code-workspace
+
+# PyCharm / IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.vim/
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# ============================================
+# OS Files
+# ============================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# ============================================
+# Docker
+# ============================================
+# Docker volumes (if using named volumes)
+docker-volumes/
+
+# ============================================
+# Node.js / Frontend (if applicable)
+# ============================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Next.js
+frontend/.next/
+frontend/out/
+frontend/.next/
+frontend/out/
+.next/
+out/
+
+# Nuxt.js
+.nuxt
+dist
+
+# ============================================
+# MCP Servers
+# ============================================
+# MCP virtual environments
+mcp_servers/*/venv/
+mcp_servers/*/__pycache__/
+mcp_servers/*/*.pyc
+
+# ============================================
+# Process Management
+# ============================================
+# PID files
+*.pid
+logs/*.pid
+
+# Lock files
+*.lock
+.pytest_cache/
+.ruff_cache/
+
+# ============================================
+# Temporary Files
+# ============================================
+*.tmp
+*.temp
+*.swp
+*.swo
+.cache/
+tmp/
+temp/
+
+# ============================================
+# HuggingFace Cache
+# ============================================
+# HuggingFace model cache (can be large)
+.cache/huggingface/
+~/.cache/huggingface/
+
+# ============================================
+# Testing
+# ============================================
+# Test outputs
+.pytest_cache/
+.tox/
+.coverage
+htmlcov/
+test-results/
+test-reports/
+
+# ============================================
+# Build Artifacts
+# ============================================
+# Compiled files
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.dylib
+*.dll
+
+# Archives (except skill zips)
+*.tar
+*.tar.gz
+*.zip
+!skills/*.zip
+
+# ============================================
+# Claude Code / AI Tools
+# ============================================
+# Claude Code cache (if any)
+.claude/cache/
+
+# ============================================
+# Documentation Build
+# ============================================
+# Sphinx
+docs/_build/
+docs/.doctrees/
+
+# MkDocs
+site/
+
+# ============================================
+# Project Specific
+# ============================================
+# Keep data/documents structure but ignore large files
+data/documents/*.pdf
+data/documents/*.docx
+data/documents/*.doc
+# But keep .txt files for testing
+!data/documents/*.txt
+
+# Generated sample docs (if regenerated)
+data/documents/generated/
+
+# Service logs
+logs/ingestion.log
+logs/retrieval.log
+logs/query.log
+logs/api_gateway.log
+
+# Keep log directory structure
+!logs/.gitkeep
+
+# Concept Documents
+docs/
+
+# ============================================
+# CI/CD
+# ============================================
+# CI artifacts
+.ci/
+ci-artifacts/
+
+# ============================================
+# Local Development
+# ============================================
+# Local overrides
+docker-compose.override.yaml
+docker-compose.local.yaml
+.local/
+
+# ============================================
+# Zone Identifier (Windows)
+# ============================================
+*.Zone.Identifier
+
+# ============================================
+# Archive
+# ============================================
+archive/
+
+# ============================================
+# Skill Development
+# ============================================
+skills/
+
+# ============================================
+# Environment Variables
+# ============================================
+.env

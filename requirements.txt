@@ -1,0 +1,40 @@
+# Core dependencies
+fastapi
+uvicorn[standard]
+httpx
+pydantic
+python-multipart
+
+# RAG dependencies
+sentence-transformers
+chromadb
+numpy
+
+# LLM client
+openai
+litellm
+anthropic
+
+# Document parsing
+PyMuPDF
+python-docx
+
+# Storage
+minio
+
+# Utilities
+python-dotenv
+python-json-logger
+tiktoken
+
+# Testing
+pytest
+pytest-asyncio
+pytest-cov
+
+# Security
+python-jose[cryptography]
+passlib[bcrypt]
+
+# Monitoring
+prometheus-client

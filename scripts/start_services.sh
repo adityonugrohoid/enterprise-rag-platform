@@ -46,12 +46,29 @@ kill_port() {
     fi
 }
 
+# Function to wait for service health with retries
+wait_for_health() {
+    local port=$1
+    local max_attempts=$2
+    local attempt=1
+
+    while [ $attempt -le $max_attempts ]; do
+        if curl -s -f "http://localhost:${port}/health" > /dev/null 2>&1; then
+            return 0
+        fi
+        sleep 2
+        attempt=$((attempt + 1))
+    done
+    return 1
+}
+
 # Function to start a service in background
 start_service() {
     local service_name=$1
     local service_file=$2
     local port=$3
-    
+    local max_wait=${4:-15}  # Default 15 attempts (30 seconds)
+
     # Check if port is already in use
     if is_port_in_use $port; then
         echo -e "${YELLOW}Port ${port} is already in use. Checking if it's our service...${NC}"
@@ -67,19 +84,26 @@ start_service() {
         # Kill existing process on port
         kill_port $port
     fi
-    
+
     echo -e "${GREEN}Starting ${service_name} on port ${port}...${NC}"
     python3 "$service_file" > "logs/${service_name}.log" 2>&1 &
     local pid=$!
     echo $pid > "logs/${service_name}.pid"
-    sleep 3
-    
-    # Check if service started successfully
-    if curl -s -f "http://localhost:${port}/health" > /dev/null 2>&1; then
+
+    # Wait for service to become healthy with retries
+    echo -e "${YELLOW}   Waiting for ${service_name} to be ready...${NC}"
+    if wait_for_health $port $max_wait; then
         echo -e "${GREEN}✓ ${service_name} is running (PID: ${pid})${NC}"
     else
-        echo -e "${YELLOW}⚠ ${service_name} may still be starting...${NC}"
-        echo -e "${YELLOW}   Check logs: tail -f logs/${service_name}.log${NC}"
+        # Check if process is still running
+        if ps -p $pid > /dev/null 2>&1; then
+            echo -e "${YELLOW}⚠ ${service_name} is still starting (PID: ${pid})${NC}"
+            echo -e "${YELLOW}   Check logs: tail -f logs/${service_name}.log${NC}"
+        else
+            echo -e "\033[0;31m✗ ${service_name} failed to start${NC}"
+            echo -e "\033[0;31m   Check logs: tail -f logs/${service_name}.log${NC}"
+            return 1
+        fi
     fi
 }
 
@@ -87,10 +111,11 @@ start_service() {
 mkdir -p logs
 
 # Start services
-start_service "ingestion" "services/ingestion/main.py" "8001"
-start_service "retrieval" "services/retrieval/main.py" "8002"
-start_service "query" "services/query/main.py" "8003"
-start_service "api_gateway" "services/api_gateway/main.py" "8080"
+# Ingestion and retrieval need more time to load embedding models
+start_service "ingestion" "services/ingestion/main.py" "8001" 30
+start_service "retrieval" "services/retrieval/main.py" "8002" 30
+start_service "query" "services/query/main.py" "8003" 15
+start_service "api_gateway" "services/api_gateway/main.py" "8080" 15
 
 echo ""
 echo -e "${GREEN}All services started!${NC}"

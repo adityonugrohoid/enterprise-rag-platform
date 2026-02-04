@@ -138,11 +138,7 @@ curl -X POST http://localhost:8080/query \
 ### Run End-to-End Tests
 
 ```bash
-# Python test script
 python scripts/test_rag_flow.py
-
-# Bash test script
-bash scripts/e2e_test.sh
 ```
 
 ### Launch Streamlit UI
@@ -414,8 +410,9 @@ enterprise-rag-platform/
 ├── scripts/               # Utility scripts
 │   ├── start_services.sh  # Start all services
 │   ├── stop_services.sh   # Stop all services
-│   ├── test_rag_flow.py   # E2E test script
-│   └── e2e_test.sh        # Bash E2E test
+│   ├── debug_services.sh  # Service diagnostics
+│   ├── start_ui.sh        # Start Streamlit UI
+│   └── test_rag_flow.py   # E2E test script
 ├── data/                  # Data directories
 │   └── documents/         # Sample documents
 ├── docker-compose.yaml    # Docker services
@@ -442,11 +439,8 @@ bash scripts/debug_services.sh
 ### Running Tests
 
 ```bash
-# Python E2E test
+# E2E test
 python scripts/test_rag_flow.py
-
-# Bash E2E test
-bash scripts/e2e_test.sh
 
 # Unit tests (when available)
 pytest tests/

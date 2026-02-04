@@ -138,38 +138,8 @@ screen -r api-gateway
 ### Phase 5: Health Checks (2 minutes)
 
 ```bash
-# Create health check script
-cat > scripts/check_health.sh << 'EOF'
-#!/bin/bash
-
-echo "=== Health Check ==="
-echo ""
-
-echo "1. API Gateway (8080):"
-curl -s http://localhost:8080/health | jq . || echo "❌ Not responding"
-
-echo -e "\n2. Ingestion Service (8001):"
-curl -s http://localhost:8001/health | jq . || echo "❌ Not responding"
-
-echo -e "\n3. Retrieval Service (8002):"
-curl -s http://localhost:8002/health | jq . || echo "❌ Not responding"
-
-echo -e "\n4. Query Service (8003):"
-curl -s http://localhost:8003/health | jq . || echo "❌ Not responding"
-
-echo -e "\n5. ChromaDB (8000):"
-curl -s http://localhost:8000/api/v1/heartbeat || echo "❌ Not responding"
-
-echo -e "\n6. Ollama (11434):"
-curl -s http://localhost:11434/api/tags | jq . || echo "❌ Not responding"
-
-echo -e "\n=== Health Check Complete ==="
-EOF
-
-chmod +x scripts/check_health.sh
-
-# Run health check
-bash scripts/check_health.sh
+# Run the diagnostics script to check all services
+bash scripts/debug_services.sh
 ```
 
 ### Phase 6: Test Document Ingestion (3 minutes)
@@ -221,13 +191,10 @@ curl -X POST http://localhost:8080/query \
 
 ```bash
 # Run comprehensive E2E test
-bash scripts/e2e_test.sh
-
-# Or using Python
 python scripts/test_rag_flow.py
 
-# Both should output:
-# ✅ All tests passed
+# Should output:
+# ✅ All E2E tests passed!
 ```
 
 ---
@@ -553,9 +520,11 @@ For best results, follow this sequence when working with Claude Code:
 - `docker-compose.yaml`: Infrastructure services
 - `.env`: Environment configuration
 - `requirements.txt`: Python dependencies
-- `scripts/e2e_test.sh`: E2E test script
-- `scripts/test_rag_flow.py`: Python E2E test
-- `scripts/generate_sample_docs.py`: Sample document generator
+- `scripts/start_services.sh`: Start all backend services
+- `scripts/stop_services.sh`: Stop all backend services
+- `scripts/debug_services.sh`: Service diagnostics
+- `scripts/test_rag_flow.py`: E2E test script
+- `scripts/start_ui.sh`: Start Streamlit UI
 
 ### Important Directories
 - `services/`: All microservices

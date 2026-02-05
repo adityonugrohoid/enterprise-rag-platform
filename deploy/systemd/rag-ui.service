@@ -1,0 +1,25 @@
+[Unit]
+Description=RAG Platform - Streamlit UI
+After=network.target rag-api-gateway.service
+Wants=rag-api-gateway.service
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/rag-platform/frontend
+EnvironmentFile=/opt/rag-platform/.env
+Environment="PATH=/opt/rag-platform/.venv/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PYTHONPATH=/opt/rag-platform"
+ExecStart=/opt/rag-platform/.venv/bin/streamlit run app.py --server.port 8501 --server.address 0.0.0.0 --server.headless true --server.baseUrlPath /ui
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Resource limits
+MemoryMax=1G
+CPUQuota=100%
+
+[Install]
+WantedBy=multi-user.target

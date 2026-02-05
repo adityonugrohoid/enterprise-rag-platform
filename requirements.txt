@@ -14,6 +14,7 @@ numpy
 openai
 litellm
 anthropic
+boto3  # AWS Bedrock
 
 # Document parsing
 PyMuPDF

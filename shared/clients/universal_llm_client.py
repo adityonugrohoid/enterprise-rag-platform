@@ -6,7 +6,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-LLMProvider = Literal["ollama", "openai", "azure", "anthropic", "vertex"]
+LLMProvider = Literal["ollama", "openai", "azure", "anthropic", "vertex", "bedrock"]
 
 
 class UniversalLLMClient:
@@ -52,7 +52,17 @@ class UniversalLLMClient:
             import litellm
             self.client = litellm
             self.model = f"vertex_ai/{model or 'gemini-1.5-flash'}"
-        
+
+        elif provider == "bedrock":
+            # Amazon Bedrock - uses boto3
+            import boto3
+            self.client = boto3.client(
+                "bedrock-runtime",
+                region_name=os.getenv("AWS_REGION", "us-east-1")
+            )
+            # Default to Llama 3.1 8B - good balance of cost/quality
+            self.model = model or os.getenv("BEDROCK_MODEL", "meta.llama3-1-8b-instruct-v1:0")
+
         logger.info(f"Initialized LLM client: {provider} with model {self.model}")
     
     def chat(
@@ -75,7 +85,7 @@ class UniversalLLMClient:
                     "temperature": temperature,
                     "max_tokens": max_tokens
                 },
-                timeout=60.0
+                timeout=300.0  # 5 minutes for CPU inference with large context
             )
             response.raise_for_status()
             return response.json()["choices"][0]["message"]["content"]
@@ -89,7 +99,40 @@ class UniversalLLMClient:
                 max_tokens=max_tokens
             )
             return response.content[0].text
-        
+
+        elif self.provider == "bedrock":
+            # Amazon Bedrock - use Converse API for unified interface
+            import json
+
+            # Convert messages to Bedrock format
+            bedrock_messages = []
+            system_prompt = None
+
+            for msg in messages:
+                if msg["role"] == "system":
+                    system_prompt = msg["content"]
+                else:
+                    bedrock_messages.append({
+                        "role": msg["role"],
+                        "content": [{"text": msg["content"]}]
+                    })
+
+            # Build request
+            request_params = {
+                "modelId": self.model,
+                "messages": bedrock_messages,
+                "inferenceConfig": {
+                    "temperature": temperature,
+                    "maxTokens": max_tokens
+                }
+            }
+
+            if system_prompt:
+                request_params["system"] = [{"text": system_prompt}]
+
+            response = self.client.converse(**request_params)
+            return response["output"]["message"]["content"][0]["text"]
+
         elif self.provider == "vertex":
             response = self.client.completion(
                 model=self.model,

@@ -1,0 +1,25 @@
+[Unit]
+Description=RAG Platform - Ingestion Service
+After=network.target docker.service
+Wants=docker.service
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/rag-platform
+EnvironmentFile=/opt/rag-platform/.env
+Environment="PATH=/opt/rag-platform/.venv/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PYTHONPATH=/opt/rag-platform"
+ExecStart=/opt/rag-platform/.venv/bin/python services/ingestion/main.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Resource limits
+MemoryMax=2G
+CPUQuota=100%
+
+[Install]
+WantedBy=multi-user.target

@@ -47,11 +47,11 @@ async def query(request: QueryRequest) -> QueryResponse:
     try:
         logger.info("Processing query", extra={"query": request.query})
         
-        # Step 1: Retrieve relevant chunks
+        # Step 1: Retrieve relevant chunks (use top_k=3 for faster CPU inference)
         async with httpx.AsyncClient(timeout=30.0) as client:
             retrieval_response = await client.post(
                 f"{RETRIEVAL_URL}/retrieve",
-                json={"query": request.query, "top_k": 5}
+                json={"query": request.query, "top_k": 3}
             )
             retrieval_response.raise_for_status()
             retrieval_data = retrieval_response.json()
@@ -67,10 +67,10 @@ async def query(request: QueryRequest) -> QueryResponse:
         
         logger.info("Retrieved chunks", extra={"chunk_count": len(chunks)})
         
-        # Step 2: Format context with token budget
+        # Step 2: Format context with token budget (reduced for faster CPU inference)
         context, token_count = format_context_with_token_budget(
             chunks=chunks,
-            max_tokens=4000,
+            max_tokens=2000,
             model=config.LLM_MODEL
         )
         logger.info("Context formatted", extra={"token_count": token_count})

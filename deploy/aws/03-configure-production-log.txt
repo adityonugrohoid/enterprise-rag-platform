@@ -1,0 +1,64 @@
+adityonugrohoid@LAPTOP-1P2SH0H3:~$   cd ~/projects/enterprise-rag-platform/deploy/aws
+adityonugrohoid@LAPTOP-1P2SH0H3:~/projects/enterprise-rag-platform/deploy/aws$   # Step 4: Configure Nginx and production (~5 min)
+  ./03-configure-production.sh
+=========================================
+Production Configuration
+=========================================
+
+Configuring Nginx...
+rag-platform.conf                                                                                             100% 5176    42.3KB/s   00:00
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+✓ Nginx configured
+
+No domain configured. Skipping SSL setup.
+To add SSL later:
+  1. Point your domain to: 3.0.228.49
+  2. Update DOMAIN_NAME in config.env
+  3. Run: sudo certbot --nginx -d yourdomain.com
+
+Configuring firewall...
+Rules updated
+Rules updated (v6)
+Rules updated
+Rules updated (v6)
+Firewall is active and enabled on system startup
+✓ Firewall configured
+Setting up health monitoring...
+✓ Health monitoring configured
+
+Final status check...
+
+Docker containers:
+NAME      IMAGE                    COMMAND                  SERVICE   CREATED          STATUS                    PORTS
+chroma    chromadb/chroma:latest   "dumb-init -- chroma…"   chroma    25 minutes ago   Up 25 minutes (healthy)   0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+minio     minio/minio:latest       "/usr/bin/docker-ent…"   minio     25 minutes ago   Up 25 minutes (healthy)   0.0.0.0:9000-9001->9000-9001/tcp, [::]:9000-9001->9000-9001/tcp
+ollama    ollama/ollama:latest     "/bin/ollama serve"      ollama    25 minutes ago   Up 25 minutes (healthy)   0.0.0.0:11434->11434/tcp, [::]:11434->11434/tcp
+redis     redis:7-alpine           "docker-entrypoint.s…"   redis     25 minutes ago   Up 25 minutes (healthy)   0.0.0.0:6379->6379/tcp, [::]:6379->6379/tcp
+
+Systemd services:
+● rag-api-gateway.service - RAG Platform - API Gateway
+     Loaded: loaded (/etc/systemd/system/rag-api-gateway.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-02-05 03:13:27 UTC; 4min 18s ago
+   Main PID: 18969 (python)
+      Tasks: 6 (limit: 9283)
+
+Testing endpoints...
+✓ HTTP endpoint working
+
+=========================================
+Production Configuration Complete!
+=========================================
+
+API Endpoint:  http://3.0.228.49
+Web UI:        http://3.0.228.49/ui
+
+Test the API:
+  curl http://3.0.228.49/health
+
+Upload a document:
+  curl -X POST http://3.0.228.49/documents/upload -H 'X-API-Key: 9b4798f095b756c13bf1b2bcbbfe2dedef5f1f89b2a16bb10c0948502bc017af' -F 'file=@document.txt'
+
+SSH to server:
+  ssh -i /home/adityonugrohoid/.ssh/rag-platform-key.pem ubuntu@3.0.228.49
+adityonugrohoid@LAPTOP-1P2SH0H3:~/projects/enterprise-rag-platform/deploy/aws$

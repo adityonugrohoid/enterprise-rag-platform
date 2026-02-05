@@ -7,7 +7,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root / "frontend"))
 
-from config import PAGE_TITLE, PAGE_ICON, LAYOUT
+from config import PAGE_TITLE, PAGE_ICON, LAYOUT, PREDEFINED_QUESTIONS, get_all_questions_with_categories
 from utils import (
     scan_documents,
     upload_document,
@@ -95,6 +95,8 @@ if "query_history" not in st.session_state:
     st.session_state.query_history = []
 if "last_query" not in st.session_state:
     st.session_state.last_query = None
+if "selected_question" not in st.session_state:
+    st.session_state.selected_question = ""
 
 # Sidebar - Document Management
 with st.sidebar:
@@ -208,37 +210,74 @@ if not st.session_state.ingested_docs:
 # Query input
 st.divider()
 
-# Create a form for query input
-with st.form(key="query_form", clear_on_submit=True):
-    col1, col2, col3 = st.columns([1, 6, 1])
-    
-    with col2:
-        query = st.text_input(
-            "Enter your question:",
-            placeholder="e.g., What are the 5G RAN performance targets?",
-            label_visibility="collapsed",
-            key="query_input"
-        )
-    
-    with col2:
-        submit_button = st.form_submit_button("🚀 Ask Both Systems", use_container_width=True)
+# Question selection section - compact layout
+col_cat, col_question, col_btn = st.columns([2, 5, 1])
 
-# Process query when submitted
-if submit_button and query:
-    # Store query in session state before form clears it
-    st.session_state.last_query = query
+with col_cat:
+    # Category dropdown
+    categories = ["-- Select Topic --"] + list(PREDEFINED_QUESTIONS.keys()) + ["Custom Query"]
+    selected_category = st.selectbox(
+        "Topic:",
+        options=categories,
+        key="category_select",
+        label_visibility="collapsed"
+    )
+
+with col_question:
+    if selected_category == "-- Select Topic --":
+        st.text_input(
+            "Question:",
+            value="",
+            placeholder="← First select a topic, then choose a question",
+            disabled=True,
+            label_visibility="collapsed",
+            key="placeholder_input"
+        )
+        selected_query = None
+    elif selected_category == "Custom Query":
+        custom_query = st.text_input(
+            "Custom question:",
+            placeholder="Type your own question here...",
+            label_visibility="collapsed",
+            key="custom_query_input"
+        )
+        selected_query = custom_query if custom_query else None
+    else:
+        # Show questions dropdown for selected category
+        questions = ["-- Select a question --"] + PREDEFINED_QUESTIONS[selected_category]
+        selected_q = st.selectbox(
+            "Question:",
+            options=questions,
+            key=f"question_select_{selected_category}",
+            label_visibility="collapsed"
+        )
+        selected_query = selected_q if selected_q != "-- Select a question --" else None
+
+with col_btn:
+    ask_disabled = selected_query is None or selected_query == ""
+    if st.button("🚀 Ask", disabled=ask_disabled, use_container_width=True, key="ask_btn"):
+        if selected_query:
+            st.session_state.last_query = selected_query
+            st.rerun()
 
 # Display results if we have a last query
 if st.session_state.last_query:
     st.divider()
-    
-    # Display the submitted query
-    st.markdown(f"""
-    <div class='submitted-query'>
-        <div class='submitted-query-label'>Your Question:</div>
-        {st.session_state.last_query}
-    </div>
-    """, unsafe_allow_html=True)
+
+    # Display the submitted query with clear button
+    col_query, col_clear = st.columns([5, 1])
+    with col_query:
+        st.markdown(f"""
+        <div class='submitted-query'>
+            <div class='submitted-query-label'>Your Question:</div>
+            {st.session_state.last_query}
+        </div>
+        """, unsafe_allow_html=True)
+    with col_clear:
+        if st.button("🔄 New Query", key="clear_query"):
+            st.session_state.last_query = None
+            st.session_state.selected_question = ""
+            st.rerun()
     
     # Create two columns for side-by-side comparison
     col_left, col_right = st.columns(2)

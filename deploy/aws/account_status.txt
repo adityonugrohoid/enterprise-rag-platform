@@ -1,0 +1,80 @@
+adityonugrohoid@LAPTOP-1P2SH0H3:~/projects/enterprise-rag-platform/deploy/aws$ # Check your account type and restrictions
+  aws account get-contact-information 2>/dev/null || echo "Account API not available"
+{
+    "ContactInformation": {
+        "AddressLine1": "Sukolilo Dian Regency Jl. Sukolilo Sejahtera 1/28",
+        "AddressLine2": "Keputih, Sukolilo",
+        "City": "Surabaya",
+        "CountryCode": "ID",
+        "FullName": "Adityo Nugroho",
+        "PhoneNumber": "+62 8123037817",
+        "PostalCode": "60111",
+        "StateOrRegion": "Jawa Timur"
+    }
+}
+
+adityonugrohoid@LAPTOP-1P2SH0H3:~/projects/enterprise-rag-platform/deploy/aws$   # List Free Tier eligible instance types in your region
+  aws ec2 describe-instance-types \
+      --filters "Name=free-tier-eligible,Values=true" \
+      --query 'InstanceTypes[].InstanceType' \
+      --region ap-southeast-1 \
+      --output table
+-----------------------
+|DescribeInstanceTypes|
++---------------------+
+|  t4g.small          |
+|  t3.micro           |
+|  t4g.micro          |
+|  c7i-flex.large     |
+|  t3.small           |
+|  m7i-flex.large     |
++---------------------+
+
+adityonugrohoid@LAPTOP-1P2SH0H3:~/projects/enterprise-rag-platform/deploy/aws$   # Check your EC2 service quotas
+  aws service-quotas get-service-quota \
+      --service-code ec2 \
+      --quota-code L-1216C47A \
+      --region ap-southeast-1 2>/dev/null || echo "Check quotas in AWS Console"
+{
+    "Quota": {
+        "ServiceCode": "ec2",
+        "ServiceName": "Amazon Elastic Compute Cloud (Amazon EC2)",
+        "QuotaArn": "arn:aws:servicequotas:ap-southeast-1:971614602365:ec2/L-1216C47A",
+        "QuotaCode": "L-1216C47A",
+        "QuotaName": "Running On-Demand Standard (A, C, D, H, I, M, R, T, Z) instances",
+        "Value": 5.0,
+        "Unit": "None",
+        "Adjustable": true,
+        "GlobalQuota": false,
+        "UsageMetric": {
+            "MetricNamespace": "AWS/Usage",
+            "MetricName": "ResourceCount",
+            "MetricDimensions": {
+                "Class": "Standard/OnDemand",
+                "Resource": "vCPU",
+                "Service": "EC2",
+                "Type": "Resource"
+            },
+            "MetricStatisticRecommendation": "Maximum"
+        },
+        "QuotaAppliedAtLevel": "ACCOUNT",
+        "Description": "Maximum number of vCPUs assigned to the Running On-Demand Standard (A, C, D, H, I, M, R, T, Z) instances."
+    }
+}
+
+adityonugrohoid@LAPTOP-1P2SH0H3:~/projects/enterprise-rag-platform/deploy/aws$   # Check if you have any running instances (to verify EC2 access)
+  aws ec2 describe-instances \
+      --query 'Reservations[*].Instances[*].[InstanceId,InstanceType,State.Name]' \
+      --region ap-southeast-1 \
+      --output table
+
+adityonugrohoid@LAPTOP-1P2SH0H3:~/projects/enterprise-rag-platform/deploy/aws$   # Try to launch a small test instance (will be terminated immediately)
+  aws ec2 run-instances \
+      --image-id ami-08d59269edddde222 \
+      --instance-type t3.micro \
+      --key-name rag-platform-key \
+      --region ap-southeast-1 \
+      --dry-run
+
+An error occurred (DryRunOperation) when calling the RunInstances operation: Request would have succeeded, but DryRun flag is set.
+adityonugrohoid@LAPTOP-1P2SH0H3:~/projects/enterprise-rag-platform/deploy/aws$

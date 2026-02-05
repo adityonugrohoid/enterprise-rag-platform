@@ -1,0 +1,51 @@
+adityonugrohoid@LAPTOP-1P2SH0H3:~$   cd ~/projects/enterprise-rag-platform/deploy/aws
+adityonugrohoid@LAPTOP-1P2SH0H3:~/projects/enterprise-rag-platform/deploy/aws$   # Step 2: Deploy fresh infrastructure
+  ./01-deploy-infrastructure.sh
+=========================================
+AWS Infrastructure Deployment
+=========================================
+
+AWS CLI configured. Account:
+971614602365
+
+Checking EC2 Key Pair...
+✓ Key pair found
+Warning: SSH open to all IPs. Set MY_IP in config.env for better security
+
+Checking Spot Instance pricing...
+Current spot price for m7i-flex.large: $0.052400/hour
+
+Creating VPC...
+✓ VPC created: vpc-01f81612e4f0047e5
+Creating Internet Gateway...
+✓ Internet Gateway created: igw-05d4281d89ce362d9
+Creating Subnet...
+✓ Subnet created: subnet-0249547c72242f73f
+Creating Route Table...
+✓ Route Table created: rtb-0aeb9e4699d6fe251
+Creating Security Group...
+✓ Security Group created: sg-0ccb19620accfe697
+Creating EC2 Spot Instance (m7i-flex.large)...
+Using Spot Instance for cost savings (~70% cheaper)
+✓ Spot Instance requested successfully
+✓ EC2 Spot Instance created: i-07298fd64a7ef7e2e
+Waiting for instance to be running...
+✓ Instance is running
+Allocating Elastic IP...
+✓ Elastic IP allocated: 3.0.228.49
+
+=========================================
+Infrastructure Deployment Complete!
+=========================================
+
+Instance ID:   i-07298fd64a7ef7e2e
+Instance Type: m7i-flex.large
+Pricing:       Spot Instance (saves ~70%)
+Public IP:     3.0.228.49
+SSH Command:   ssh -i ~/.ssh/rag-platform-key.pem ubuntu@3.0.228.49
+
+Wait 2-3 minutes for the instance to fully initialize, then run:
+  ./02-deploy-application.sh
+
+Deployment info saved to: /home/adityonugrohoid/projects/enterprise-rag-platform/deploy/aws/deployment-info.env
+adityonugrohoid@LAPTOP-1P2SH0H3:~/projects/enterprise-rag-platform/deploy/aws$

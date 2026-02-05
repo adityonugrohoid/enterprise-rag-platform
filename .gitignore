@@ -358,6 +358,13 @@ archive/
 skills/
 
 # ============================================
+# AWS Deployment
+# ============================================
+deploy/aws/deployment-info.env
+deploy/aws/api-key.txt
+deploy/aws/*.pem
+
+# ============================================
 # Environment Variables
 # ============================================
 .env

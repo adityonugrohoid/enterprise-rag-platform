@@ -1,0 +1,25 @@
+[Unit]
+Description=RAG Platform - API Gateway
+After=network.target docker.service rag-ingestion.service rag-retrieval.service rag-query.service
+Wants=docker.service
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/rag-platform
+EnvironmentFile=/opt/rag-platform/.env
+Environment="PATH=/opt/rag-platform/.venv/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PYTHONPATH=/opt/rag-platform"
+ExecStart=/opt/rag-platform/.venv/bin/python services/api_gateway/main.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Resource limits
+MemoryMax=1G
+CPUQuota=100%
+
+[Install]
+WantedBy=multi-user.target

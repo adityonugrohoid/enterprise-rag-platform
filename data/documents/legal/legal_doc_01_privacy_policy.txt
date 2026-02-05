@@ -1,0 +1,227 @@
+PRIVACY POLICY
+TechCorp Industries
+========================================
+Last Updated: January 15, 2026
+Effective Date: February 1, 2026
+
+
+1. INTRODUCTION
+
+TechCorp Industries ("Company," "we," "us," or "our") respects your privacy and is committed to protecting your personal data. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our services, websites, and applications.
+
+This policy applies to:
+- TechCorp.com and all subdomains
+- TechCorp mobile applications
+- TechCorp cloud services and APIs
+- Customer support interactions
+- Marketing communications
+
+
+2. INFORMATION WE COLLECT
+
+2.1 Information You Provide Directly
+------------------------------------
+- Account Information: Name, email address, phone number, company name, job title
+- Payment Information: Credit card numbers, billing address (processed by secure third-party payment processors)
+- Profile Information: Profile photo, preferences, communication preferences
+- Communications: Support tickets, emails, chat messages, survey responses
+- User Content: Files, documents, and data you upload to our services
+
+2.2 Information Collected Automatically
+---------------------------------------
+- Device Information: IP address, browser type, operating system, device identifiers
+- Usage Data: Pages visited, features used, click patterns, time spent on pages
+- Log Data: Access times, error logs, referring URLs
+- Cookies and Tracking: Session cookies, preference cookies, analytics cookies
+
+2.3 Information from Third Parties
+----------------------------------
+- Single Sign-On providers (Google, Microsoft, etc.)
+- Business partners and resellers
+- Public databases and social media profiles
+- Credit reporting agencies (for business accounts)
+
+
+3. HOW WE USE YOUR INFORMATION
+
+3.1 Service Delivery
+--------------------
+- Provide, maintain, and improve our services
+- Process transactions and send related information
+- Send technical notices, updates, and support messages
+- Respond to your comments, questions, and customer service requests
+
+3.2 Personalization
+-------------------
+- Customize your experience based on preferences
+- Provide personalized content and recommendations
+- Remember your settings and preferences
+
+3.3 Analytics and Improvement
+-----------------------------
+- Monitor and analyze trends, usage, and activities
+- Measure effectiveness of our services
+- Develop new products, services, and features
+
+3.4 Marketing and Communications
+--------------------------------
+- Send promotional communications (with your consent)
+- Deliver targeted advertising
+- Conduct surveys and collect feedback
+
+3.5 Security and Compliance
+---------------------------
+- Detect, prevent, and address fraud and abuse
+- Enforce our terms and policies
+- Comply with legal obligations
+
+
+4. DATA SHARING AND DISCLOSURE
+
+4.1 Service Providers
+---------------------
+We share data with third-party vendors who perform services on our behalf:
+- Cloud hosting providers (AWS, Google Cloud)
+- Payment processors (Stripe, PayPal)
+- Customer support platforms (Zendesk)
+- Analytics services (Google Analytics, Mixpanel)
+- Email delivery services (SendGrid)
+
+All service providers are contractually obligated to protect your data.
+
+4.2 Business Transfers
+----------------------
+In connection with any merger, acquisition, or sale of company assets, your information may be transferred. You will be notified of any such change.
+
+4.3 Legal Requirements
+----------------------
+We may disclose information if required by law, court order, or government request, or to:
+- Protect the safety of any person
+- Address fraud, security, or technical issues
+- Protect our rights, property, or safety
+
+4.4 With Your Consent
+---------------------
+We may share your information with third parties when you explicitly consent.
+
+4.5 Aggregated Data
+-------------------
+We may share aggregated, anonymized data that cannot identify you personally.
+
+
+5. DATA RETENTION
+
+We retain your information for as long as necessary to:
+- Provide our services
+- Comply with legal obligations
+- Resolve disputes
+- Enforce our agreements
+
+Retention periods:
+- Account data: Duration of account + 3 years
+- Transaction records: 7 years (legal requirement)
+- Support communications: 5 years
+- Usage logs: 2 years
+- Marketing data: Until consent withdrawn + 1 year
+
+After retention period, data is securely deleted or anonymized.
+
+
+6. YOUR RIGHTS AND CHOICES
+
+6.1 Access and Portability
+--------------------------
+You can request a copy of your personal data in a machine-readable format.
+
+6.2 Correction
+--------------
+You can update or correct inaccurate personal data through your account settings or by contacting us.
+
+6.3 Deletion
+------------
+You can request deletion of your personal data, subject to certain legal exceptions.
+
+6.4 Restriction
+---------------
+You can request that we limit the processing of your data in certain circumstances.
+
+6.5 Objection
+-------------
+You can object to processing of your data for direct marketing at any time.
+
+6.6 Withdraw Consent
+--------------------
+Where processing is based on consent, you can withdraw consent at any time.
+
+To exercise these rights, contact: privacy@techcorp.com
+Response time: Within 30 days
+
+
+7. COOKIES AND TRACKING
+
+7.1 Types of Cookies We Use
+---------------------------
+- Essential Cookies: Required for basic site functionality
+- Performance Cookies: Help us understand how visitors use our site
+- Functionality Cookies: Remember your preferences
+- Targeting Cookies: Deliver relevant advertisements
+
+7.2 Managing Cookies
+--------------------
+You can control cookies through:
+- Browser settings
+- Our cookie preference center
+- Opt-out links for specific providers
+
+Note: Disabling essential cookies may affect site functionality.
+
+
+8. INTERNATIONAL DATA TRANSFERS
+
+Your data may be transferred to and processed in countries outside your residence, including the United States. We ensure appropriate safeguards:
+- Standard Contractual Clauses (SCCs)
+- Adequacy decisions by relevant authorities
+- Binding Corporate Rules
+
+
+9. DATA SECURITY
+
+We implement appropriate technical and organizational measures:
+- Encryption in transit (TLS 1.3) and at rest (AES-256)
+- Access controls and authentication
+- Regular security assessments and penetration testing
+- Employee training and confidentiality agreements
+- Incident response procedures
+
+No method is 100% secure. Report security concerns to: security@techcorp.com
+
+
+10. CHILDREN'S PRIVACY
+
+Our services are not intended for children under 16. We do not knowingly collect data from children. If we learn we have collected such data, we will delete it promptly.
+
+
+11. CHANGES TO THIS POLICY
+
+We may update this policy periodically. Changes will be posted on this page with an updated effective date. Material changes will be notified via email or prominent notice.
+
+
+12. CONTACT US
+
+Data Protection Officer: dpo@techcorp.com
+
+TechCorp Industries
+Privacy Team
+123 Technology Drive
+San Francisco, CA 94105
+United States
+
+Phone: 1-800-TECHCORP
+Email: privacy@techcorp.com
+
+EU Representative:
+TechCorp EU Ltd.
+10 Hanover Square
+London W1S 1HQ
+United Kingdom
+eu-privacy@techcorp.com

@@ -15,6 +15,7 @@ openai
 litellm
 anthropic
 boto3  # AWS Bedrock
+google-cloud-aiplatform  # GCP Vertex AI
 
 # Document parsing
 PyMuPDF

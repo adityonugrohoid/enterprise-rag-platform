@@ -1,0 +1,579 @@
+TECHCORP INTERNAL API REFERENCE
+Platform Services API v3.7.2
+========================================
+Classification: INTERNAL USE ONLY
+Last Updated: January 2026
+Base URL: https://api.internal.techcorp.com/v3
+
+
+AUTHENTICATION
+
+All API requests require authentication via Bearer token or API key.
+
+Header Options:
+  Authorization: Bearer <JWT_TOKEN>
+  X-TC-API-Key: <API_KEY>
+
+API Key Format: tc_live_[32-character-hex]
+Example: tc_live_a1b2c3d4e5f6789012345678abcdef90
+
+Token Endpoint:
+  POST /auth/token
+
+Request Body:
+{
+  "client_id": "svc_[service_name]_[env]",
+  "client_secret": "[256-bit-secret]",
+  "grant_type": "client_credentials",
+  "scope": "read write admin"
+}
+
+Response:
+{
+  "access_token": "eyJhbGciOiJSUzI1NiIs...",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "scope": "read write"
+}
+
+Token Refresh: Tokens expire in 3600 seconds (1 hour).
+Refresh window: Last 300 seconds before expiry.
+
+
+========================================
+RATE LIMITS
+========================================
+
+Tier-based rate limiting per API key:
+
+| Tier       | Requests/min | Requests/hour | Burst |
+|------------|--------------|---------------|-------|
+| Free       | 60           | 1,000         | 10    |
+| Standard   | 300          | 10,000        | 50    |
+| Enterprise | 1,000        | 100,000       | 200   |
+| Internal   | 5,000        | Unlimited     | 500   |
+
+Rate Limit Headers:
+  X-RateLimit-Limit: 300
+  X-RateLimit-Remaining: 287
+  X-RateLimit-Reset: 1706745600
+
+Exceeded Response (HTTP 429):
+{
+  "error": "rate_limit_exceeded",
+  "error_code": "TC-429-001",
+  "message": "Rate limit exceeded. Retry after 45 seconds.",
+  "retry_after": 45
+}
+
+
+========================================
+USER SERVICE API
+========================================
+
+GET /users/{user_id}
+--------------------
+Retrieve user profile by ID.
+
+Path Parameters:
+  user_id (required): UUID format, e.g., 550e8400-e29b-41d4-a716-446655440000
+
+Query Parameters:
+  include: Comma-separated related resources
+    - profile: Include full profile data
+    - preferences: Include user preferences
+    - teams: Include team memberships
+    - audit: Include last 10 audit events
+  fields: Comma-separated field filter
+
+Example Request:
+  GET /users/550e8400-e29b-41d4-a716-446655440000?include=profile,teams&fields=id,email,name
+
+Response (200 OK):
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "email": "alice.johnson@techcorp.com",
+  "name": "Alice Johnson",
+  "status": "active",
+  "created_at": "2024-03-15T10:30:00Z",
+  "profile": {
+    "department": "Engineering",
+    "title": "Senior Developer",
+    "employee_id": "TC-2024-0892",
+    "office_location": "SF-HQ-4F",
+    "phone_extension": "4892",
+    "manager_id": "660e8400-e29b-41d4-a716-446655440001"
+  },
+  "teams": [
+    {
+      "team_id": "team_platform_core",
+      "role": "member",
+      "joined_at": "2024-03-20T00:00:00Z"
+    }
+  ]
+}
+
+Error Codes:
+  TC-404-USR-001: User not found
+  TC-403-USR-002: Insufficient permissions to view user
+  TC-400-USR-003: Invalid user_id format
+
+
+POST /users
+-----------
+Create new user account.
+
+Request Body:
+{
+  "email": "bob.smith@techcorp.com",
+  "name": "Bob Smith",
+  "department_code": "ENG",
+  "role_id": "role_developer",
+  "manager_id": "550e8400-e29b-41d4-a716-446655440000",
+  "start_date": "2026-02-15",
+  "office_code": "SF-HQ",
+  "send_welcome_email": true
+}
+
+Required Fields: email, name, department_code, role_id
+Optional Fields: manager_id, start_date, office_code, send_welcome_email
+
+Response (201 Created):
+{
+  "id": "770e8400-e29b-41d4-a716-446655440002",
+  "email": "bob.smith@techcorp.com",
+  "employee_id": "TC-2026-1547",
+  "temporary_password": "TmpPwd#2026$xK9m",
+  "password_expires_at": "2026-02-18T00:00:00Z",
+  "activation_link": "https://portal.techcorp.com/activate?token=act_7f8g9h0i..."
+}
+
+Error Codes:
+  TC-409-USR-010: Email already exists
+  TC-400-USR-011: Invalid department_code
+  TC-400-USR-012: Invalid role_id
+  TC-400-USR-013: Manager not found
+  TC-422-USR-014: Start date cannot be in the past
+
+
+PATCH /users/{user_id}
+----------------------
+Update user attributes.
+
+Request Body (partial update):
+{
+  "status": "suspended",
+  "suspension_reason": "security_review",
+  "suspended_by": "admin_user_id",
+  "suspension_expires_at": "2026-03-01T00:00:00Z"
+}
+
+Allowed Status Values:
+  - active: Normal active account
+  - suspended: Temporarily disabled
+  - terminated: Permanently disabled
+  - pending: Awaiting activation
+
+Response (200 OK):
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "suspended",
+  "updated_at": "2026-02-05T14:30:00Z",
+  "updated_by": "admin_user_id"
+}
+
+
+========================================
+PROJECT SERVICE API
+========================================
+
+GET /projects
+-------------
+List projects with filtering and pagination.
+
+Query Parameters:
+  status: active|archived|all (default: active)
+  department: Department code filter
+  owner_id: Filter by project owner
+  created_after: ISO 8601 datetime
+  created_before: ISO 8601 datetime
+  page: Page number (default: 1)
+  per_page: Items per page (default: 20, max: 100)
+  sort: Field to sort by (created_at, name, budget)
+  order: asc|desc (default: desc)
+
+Example:
+  GET /projects?status=active&department=ENG&per_page=50&sort=created_at&order=desc
+
+Response (200 OK):
+{
+  "data": [
+    {
+      "id": "proj_2026_platform_v4",
+      "name": "Platform Modernization v4",
+      "code": "PLT-2026-001",
+      "status": "active",
+      "department": "ENG",
+      "owner_id": "550e8400-e29b-41d4-a716-446655440000",
+      "budget_allocated": 2500000.00,
+      "budget_spent": 847293.47,
+      "budget_currency": "USD",
+      "start_date": "2026-01-15",
+      "target_end_date": "2026-12-31",
+      "completion_percentage": 34,
+      "team_size": 12,
+      "priority": "P1",
+      "tags": ["platform", "modernization", "q1-priority"]
+    }
+  ],
+  "pagination": {
+    "current_page": 1,
+    "per_page": 50,
+    "total_pages": 3,
+    "total_count": 127,
+    "has_next": true,
+    "has_prev": false
+  }
+}
+
+
+POST /projects/{project_id}/allocations
+---------------------------------------
+Allocate resources to project.
+
+Request Body:
+{
+  "allocations": [
+    {
+      "user_id": "550e8400-e29b-41d4-a716-446655440000",
+      "role": "tech_lead",
+      "allocation_percentage": 100,
+      "start_date": "2026-02-01",
+      "end_date": "2026-06-30",
+      "billable": true,
+      "cost_center": "CC-ENG-2026-PLT"
+    },
+    {
+      "user_id": "660e8400-e29b-41d4-a716-446655440001",
+      "role": "developer",
+      "allocation_percentage": 50,
+      "start_date": "2026-02-15",
+      "end_date": null,
+      "billable": true,
+      "cost_center": "CC-ENG-2026-PLT"
+    }
+  ]
+}
+
+Allocation Percentage Rules:
+  - Total allocation per user cannot exceed 100%
+  - Minimum allocation: 10%
+  - Allocation conflicts checked against existing assignments
+
+Response (201 Created):
+{
+  "project_id": "proj_2026_platform_v4",
+  "allocations_created": 2,
+  "warnings": [
+    {
+      "user_id": "660e8400-e29b-41d4-a716-446655440001",
+      "warning": "User has 40% allocation to proj_2025_legacy. Total will be 90%."
+    }
+  ]
+}
+
+Error Codes:
+  TC-400-PRJ-020: Allocation exceeds 100% for user
+  TC-404-PRJ-021: Project not found
+  TC-404-PRJ-022: User not found
+  TC-409-PRJ-023: Duplicate allocation for date range
+
+
+========================================
+BILLING SERVICE API
+========================================
+
+POST /billing/invoices
+----------------------
+Generate invoice for customer.
+
+Request Body:
+{
+  "customer_id": "cust_enterprise_acme_corp",
+  "billing_period": {
+    "start": "2026-01-01",
+    "end": "2026-01-31"
+  },
+  "line_items": [
+    {
+      "sku": "CLOUD-COMPUTE-STD",
+      "description": "Standard Compute Hours",
+      "quantity": 744,
+      "unit_price": 0.085,
+      "unit": "hour",
+      "discount_code": "ENT-2026-15PCT"
+    },
+    {
+      "sku": "CLOUD-STORAGE-GB",
+      "description": "Storage (GB-month)",
+      "quantity": 5120,
+      "unit_price": 0.023,
+      "unit": "GB-month"
+    },
+    {
+      "sku": "CLOUD-BANDWIDTH-GB",
+      "description": "Data Transfer Out",
+      "quantity": 892,
+      "unit_price": 0.09,
+      "unit": "GB"
+    }
+  ],
+  "tax_rate": 0.0875,
+  "tax_jurisdiction": "CA-SF",
+  "payment_terms_days": 30,
+  "currency": "USD"
+}
+
+SKU Reference:
+  CLOUD-COMPUTE-STD: $0.085/hour - Standard compute
+  CLOUD-COMPUTE-HI:  $0.170/hour - High-performance compute
+  CLOUD-COMPUTE-GPU: $0.950/hour - GPU compute (NVIDIA T4)
+  CLOUD-STORAGE-GB:  $0.023/GB-month - Standard storage
+  CLOUD-STORAGE-IA:  $0.0125/GB-month - Infrequent access
+  CLOUD-BANDWIDTH-GB: $0.09/GB - Data transfer out
+  CLOUD-API-CALL:    $0.0001/request - API calls (after 1M free)
+  SUPPORT-BASIC:     $0/month - Basic support
+  SUPPORT-PRO:       $100/month - Professional support
+  SUPPORT-ENT:       $500/month - Enterprise support
+
+Discount Codes:
+  ENT-2026-15PCT: 15% enterprise discount
+  STARTUP-50PCT: 50% startup program discount
+  ANNUAL-10PCT: 10% annual commitment discount
+
+Response (201 Created):
+{
+  "invoice_id": "INV-2026-01-00847",
+  "customer_id": "cust_enterprise_acme_corp",
+  "status": "pending",
+  "subtotal": 271.78,
+  "discount_amount": 40.77,
+  "tax_amount": 20.21,
+  "total_amount": 251.22,
+  "currency": "USD",
+  "due_date": "2026-03-02",
+  "pdf_url": "https://billing.techcorp.com/invoices/INV-2026-01-00847.pdf",
+  "payment_link": "https://pay.techcorp.com/i/INV-2026-01-00847"
+}
+
+
+GET /billing/usage/{customer_id}
+--------------------------------
+Get real-time usage metrics.
+
+Query Parameters:
+  period: current|previous|custom
+  start_date: ISO 8601 date (required if period=custom)
+  end_date: ISO 8601 date (required if period=custom)
+  granularity: hourly|daily|monthly (default: daily)
+  resources: Comma-separated resource types
+
+Response (200 OK):
+{
+  "customer_id": "cust_enterprise_acme_corp",
+  "period": {
+    "start": "2026-02-01T00:00:00Z",
+    "end": "2026-02-05T23:59:59Z"
+  },
+  "usage": {
+    "compute": {
+      "total_hours": 487.5,
+      "peak_instances": 15,
+      "avg_instances": 10.2,
+      "by_type": {
+        "CLOUD-COMPUTE-STD": 420.0,
+        "CLOUD-COMPUTE-GPU": 67.5
+      }
+    },
+    "storage": {
+      "current_gb": 5847,
+      "avg_gb": 5623,
+      "peak_gb": 5892
+    },
+    "bandwidth": {
+      "ingress_gb": 234.7,
+      "egress_gb": 156.3
+    },
+    "api_calls": {
+      "total": 2847593,
+      "by_endpoint": {
+        "/users": 847293,
+        "/projects": 523847,
+        "/billing": 128475
+      }
+    }
+  },
+  "estimated_cost": {
+    "subtotal": 178.45,
+    "projected_monthly": 892.25,
+    "currency": "USD"
+  }
+}
+
+
+========================================
+WEBHOOK CONFIGURATION
+========================================
+
+POST /webhooks
+--------------
+Register webhook endpoint.
+
+Request Body:
+{
+  "url": "https://yourservice.com/webhooks/techcorp",
+  "events": [
+    "user.created",
+    "user.updated",
+    "user.deleted",
+    "project.created",
+    "project.status_changed",
+    "invoice.generated",
+    "invoice.paid",
+    "invoice.overdue"
+  ],
+  "secret": "whsec_your_32_character_secret_key",
+  "active": true,
+  "retry_policy": {
+    "max_retries": 5,
+    "retry_interval_seconds": [60, 300, 900, 3600, 7200]
+  }
+}
+
+Webhook Payload Format:
+{
+  "id": "evt_1234567890abcdef",
+  "type": "user.created",
+  "created_at": "2026-02-05T10:30:00Z",
+  "data": {
+    "user_id": "550e8400-e29b-41d4-a716-446655440000",
+    "email": "alice@techcorp.com"
+  },
+  "webhook_id": "wh_config_abc123"
+}
+
+Signature Verification:
+  Header: X-TC-Webhook-Signature
+  Algorithm: HMAC-SHA256
+  Payload: timestamp.payload_json
+
+  Python verification:
+    import hmac
+    import hashlib
+
+    expected = hmac.new(
+        secret.encode(),
+        f"{timestamp}.{payload}".encode(),
+        hashlib.sha256
+    ).hexdigest()
+
+    if not hmac.compare_digest(expected, signature):
+        raise InvalidSignatureError()
+
+
+========================================
+ERROR CODES REFERENCE
+========================================
+
+Format: TC-[HTTP_STATUS]-[SERVICE]-[NUMBER]
+
+Authentication Errors (401):
+  TC-401-AUTH-001: Missing authentication header
+  TC-401-AUTH-002: Invalid API key format
+  TC-401-AUTH-003: API key revoked
+  TC-401-AUTH-004: Token expired
+  TC-401-AUTH-005: Token signature invalid
+  TC-401-AUTH-006: Insufficient scope
+
+Authorization Errors (403):
+  TC-403-AUTHZ-001: Resource access denied
+  TC-403-AUTHZ-002: IP not in allowlist
+  TC-403-AUTHZ-003: Action not permitted for role
+
+Validation Errors (400):
+  TC-400-VAL-001: Missing required field
+  TC-400-VAL-002: Invalid field format
+  TC-400-VAL-003: Value out of range
+  TC-400-VAL-004: Invalid enum value
+
+Not Found Errors (404):
+  TC-404-RES-001: Resource not found
+  TC-404-RES-002: Endpoint not found
+
+Conflict Errors (409):
+  TC-409-CNF-001: Resource already exists
+  TC-409-CNF-002: Concurrent modification conflict
+  TC-409-CNF-003: State transition not allowed
+
+Server Errors (500):
+  TC-500-SRV-001: Internal server error
+  TC-500-SRV-002: Database connection failed
+  TC-500-SRV-003: Downstream service unavailable
+
+
+========================================
+SDK CONFIGURATION
+========================================
+
+Python SDK Installation:
+  pip install techcorp-sdk==3.7.2
+
+Initialization:
+  from techcorp import TechCorpClient
+
+  client = TechCorpClient(
+      api_key="tc_live_a1b2c3d4e5f6789012345678abcdef90",
+      environment="production",  # or "staging", "development"
+      timeout=30,
+      max_retries=3,
+      base_url="https://api.internal.techcorp.com/v3"  # optional override
+  )
+
+Environment Variables:
+  TECHCORP_API_KEY=tc_live_...
+  TECHCORP_ENV=production
+  TECHCORP_TIMEOUT=30
+  TECHCORP_DEBUG=false
+
+Example Usage:
+  # Get user
+  user = client.users.get("550e8400-e29b-41d4-a716-446655440000")
+
+  # Create project
+  project = client.projects.create(
+      name="New Project",
+      code="NP-2026-001",
+      department="ENG",
+      budget=100000
+  )
+
+  # List with pagination
+  for user in client.users.list(department="ENG", per_page=100):
+      print(user.email)
+
+
+========================================
+ENVIRONMENT ENDPOINTS
+========================================
+
+| Environment | Base URL                                    | Purpose          |
+|-------------|---------------------------------------------|------------------|
+| Production  | https://api.internal.techcorp.com/v3       | Live data        |
+| Staging     | https://api.staging.techcorp.com/v3        | Pre-prod testing |
+| Development | https://api.dev.techcorp.com/v3            | Development      |
+| Sandbox     | https://api.sandbox.techcorp.com/v3        | Safe testing     |
+
+Sandbox Credentials (for testing):
+  API Key: tc_test_sandbox_key_do_not_use_in_prod
+  Test User ID: 00000000-0000-0000-0000-000000000001
+  Test Project ID: proj_test_sandbox_001

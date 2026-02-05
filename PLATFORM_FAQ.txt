@@ -1,0 +1,93 @@
+Enterprise RAG Platform - Technical FAQ
+=======================================
+
+1. Which LLM?
+-------------
+Model: Ollama running llama3.2:1b-fast (optimized variant)
+Base: Meta's Llama 3.2 1B parameter model
+Optimization: Reduced context window (2048 tokens), 8 threads
+Location: Self-hosted in Docker container
+Config: /opt/rag-platform/.env -> LLM_MODEL=llama3.2:1b-fast
+
+Alternative models supported:
+- llama3.2:3b (better quality, slower on CPU)
+- llama3.1:8b (production quality, requires GPU)
+- mistral:7b (good quality, requires GPU)
+
+
+2. Vector DB?
+-------------
+Database: ChromaDB
+Type: Open-source embedding database
+Storage: Local persistent storage in data/chroma/
+Container: Running as Docker service
+Collection: Single collection for all documents
+
+Embedding model: Default ChromaDB embeddings (all-MiniLM-L6-v2)
+Dimensions: 384
+
+
+3. Chunking Strategy?
+---------------------
+Type: Sentence-based (semantic boundaries)
+Chunk size: 512 tokens (approximate)
+Overlap: 50 tokens between chunks
+Implementation: services/ingestion/chunker.py
+
+How it works:
+- Splits text into sentences using regex
+- Accumulates sentences until ~512 tokens reached
+- Creates overlap by including last 50 tokens from previous chunk
+- Preserves sentence boundaries (no mid-sentence cuts)
+
+
+4. Authentication?
+------------------
+Method: API Key via HTTP header
+Header: X-API-Key
+Storage: Single key in /opt/rag-platform/.env
+Generation: Random 64-character hex string (openssl rand -hex 32)
+Local copy: deploy/aws/api-key.txt
+
+How it works:
+- API Gateway checks X-API-Key header on protected endpoints
+- Compares against API_KEY environment variable
+- Returns 401 Unauthorized if missing or invalid
+- No expiration, rotation requires manual update
+
+Protected endpoints:
+- POST /documents/upload
+- POST /query
+
+Unprotected endpoints:
+- GET /health
+
+
+5. Multi-tenant?
+----------------
+Status: NO - Single tenant only
+
+Current design:
+- All documents stored in single ChromaDB collection
+- Single API key for all access
+- No user isolation or namespacing
+- No per-user document filtering
+
+To add multi-tenancy would require:
+- User/tenant ID in document metadata
+- Filter queries by tenant ID
+- Separate API keys per tenant
+- JWT tokens with tenant claims
+- Namespace isolation in ChromaDB collections
+
+
+Quick Reference
+===============
+LLM Provider:     Ollama (self-hosted)
+LLM Model:        llama3.2:1b-fast
+Vector DB:        ChromaDB
+Embedding Model:  all-MiniLM-L6-v2
+Chunk Size:       512 tokens
+Chunk Overlap:    50 tokens
+Auth Method:      API Key (X-API-Key header)
+Multi-tenant:     No

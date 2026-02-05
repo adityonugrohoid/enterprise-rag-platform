@@ -1,0 +1,467 @@
+PYTHON PROGRAMMING BASICS
+Course Materials - Introduction Module
+========================================
+Course: CS-PY100
+Instructor: Prof. Michael Torres
+Version: Spring 2026
+
+
+LESSON 1: GETTING STARTED WITH PYTHON
+
+1.1 What is Python?
+-------------------
+Python is a high-level, interpreted programming language known for:
+- Readable, clean syntax
+- Versatility (web, data science, automation, AI)
+- Large standard library
+- Active community and ecosystem
+- Cross-platform compatibility
+
+Created by Guido van Rossum in 1991.
+Current version: Python 3.12 (as of 2026)
+
+1.2 Installing Python
+---------------------
+Windows:
+1. Download from python.org/downloads
+2. Run installer
+3. Check "Add Python to PATH"
+4. Click "Install Now"
+
+Mac:
+1. Install Homebrew: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+2. Run: brew install python
+
+Linux:
+sudo apt update
+sudo apt install python3 python3-pip
+
+Verify installation:
+python --version
+# Output: Python 3.12.x
+
+1.3 Your First Program
+----------------------
+Create a file named hello.py:
+
+# This is a comment
+print("Hello, World!")
+
+Run it:
+python hello.py
+
+Output:
+Hello, World!
+
+
+LESSON 2: VARIABLES AND DATA TYPES
+
+2.1 Variables
+-------------
+Variables store data for later use.
+
+# Variable assignment
+name = "Alice"          # String
+age = 25                # Integer
+height = 5.6            # Float
+is_student = True       # Boolean
+
+# Multiple assignment
+x, y, z = 1, 2, 3
+
+# Naming conventions
+my_variable = "snake_case is preferred"
+MY_CONSTANT = "UPPERCASE for constants"
+
+# Invalid names (avoid these)
+# 2name = "can't start with number"
+# my-var = "no hyphens"
+# class = "no reserved words"
+
+2.2 Data Types
+--------------
+STRINGS (str)
+Text data enclosed in quotes.
+
+greeting = "Hello"
+name = 'World'
+multiline = """This is
+a multiline
+string"""
+
+# String operations
+full = greeting + " " + name    # Concatenation: "Hello World"
+repeated = "Ha" * 3             # Repetition: "HaHaHa"
+length = len(greeting)          # Length: 5
+upper = greeting.upper()        # Uppercase: "HELLO"
+lower = greeting.lower()        # Lowercase: "hello"
+
+# String formatting (f-strings)
+name = "Alice"
+age = 25
+message = f"My name is {name} and I am {age} years old."
+
+# String indexing
+word = "Python"
+# P  y  t  h  o  n
+# 0  1  2  3  4  5
+# -6 -5 -4 -3 -2 -1
+
+first = word[0]      # "P"
+last = word[-1]      # "n"
+slice = word[0:3]    # "Pyt" (start:end, end excluded)
+
+INTEGERS (int)
+Whole numbers.
+
+count = 42
+negative = -10
+big_number = 1_000_000    # Underscores for readability
+
+# Integer operations
+sum = 10 + 5        # Addition: 15
+diff = 10 - 5       # Subtraction: 5
+product = 10 * 5    # Multiplication: 50
+quotient = 10 / 3   # Division: 3.333... (returns float)
+floor_div = 10 // 3 # Floor division: 3 (integer result)
+remainder = 10 % 3  # Modulo: 1
+power = 2 ** 3      # Exponentiation: 8
+
+FLOATS (float)
+Decimal numbers.
+
+price = 19.99
+temperature = -5.5
+scientific = 1.5e10    # 1.5 × 10^10
+
+# Float precision note
+0.1 + 0.2    # Returns 0.30000000000000004 (not exactly 0.3)
+# Use decimal module for precise calculations
+
+BOOLEANS (bool)
+True or False values.
+
+is_valid = True
+is_empty = False
+
+# Boolean operations
+not True        # False
+True and False  # False
+True or False   # True
+
+# Comparison operators (return booleans)
+5 > 3           # True
+5 < 3           # False
+5 == 5          # True (equality)
+5 != 3          # True (inequality)
+5 >= 5          # True
+5 <= 3          # False
+
+NONE TYPE
+Represents absence of value.
+
+result = None
+if result is None:
+    print("No result yet")
+
+
+LESSON 3: COLLECTIONS
+
+3.1 Lists
+---------
+Ordered, mutable collection.
+
+# Creating lists
+fruits = ["apple", "banana", "cherry"]
+numbers = [1, 2, 3, 4, 5]
+mixed = [1, "hello", 3.14, True]
+empty = []
+
+# Accessing elements
+first = fruits[0]       # "apple"
+last = fruits[-1]       # "cherry"
+slice = fruits[0:2]     # ["apple", "banana"]
+
+# Modifying lists
+fruits[0] = "apricot"           # Replace element
+fruits.append("date")           # Add to end
+fruits.insert(1, "blueberry")   # Insert at index
+fruits.remove("banana")         # Remove by value
+popped = fruits.pop()           # Remove and return last
+del fruits[0]                   # Delete by index
+
+# List operations
+length = len(fruits)
+fruits.sort()                   # Sort in place
+sorted_fruits = sorted(fruits)  # Return new sorted list
+fruits.reverse()                # Reverse in place
+"apple" in fruits               # Check membership: True/False
+
+# List comprehension
+squares = [x**2 for x in range(5)]    # [0, 1, 4, 9, 16]
+evens = [x for x in range(10) if x % 2 == 0]    # [0, 2, 4, 6, 8]
+
+3.2 Tuples
+----------
+Ordered, immutable collection.
+
+# Creating tuples
+coordinates = (10, 20)
+single = (42,)          # Note the comma
+rgb = (255, 128, 0)
+
+# Accessing (same as lists)
+x = coordinates[0]      # 10
+
+# Cannot modify
+# coordinates[0] = 5    # Error!
+
+# Use cases: returning multiple values
+def get_dimensions():
+    return (1920, 1080)
+
+width, height = get_dimensions()    # Tuple unpacking
+
+3.3 Dictionaries
+----------------
+Key-value pairs, unordered (insertion order preserved since 3.7).
+
+# Creating dictionaries
+person = {
+    "name": "Alice",
+    "age": 25,
+    "city": "New York"
+}
+empty_dict = {}
+
+# Accessing values
+name = person["name"]           # "Alice"
+age = person.get("age")         # 25
+missing = person.get("job", "N/A")   # "N/A" (default)
+
+# Modifying
+person["age"] = 26              # Update value
+person["job"] = "Engineer"      # Add new key
+del person["city"]              # Delete key
+
+# Dictionary operations
+keys = person.keys()            # dict_keys(['name', 'age', 'job'])
+values = person.values()        # dict_values(['Alice', 26, 'Engineer'])
+items = person.items()          # dict_items([('name', 'Alice'), ...])
+"name" in person                # True
+
+# Dictionary comprehension
+squares = {x: x**2 for x in range(5)}    # {0: 0, 1: 1, 2: 4, 3: 9, 4: 16}
+
+3.4 Sets
+--------
+Unordered collection of unique elements.
+
+# Creating sets
+colors = {"red", "green", "blue"}
+numbers = set([1, 2, 2, 3, 3, 3])    # {1, 2, 3} - duplicates removed
+
+# Set operations
+colors.add("yellow")
+colors.remove("red")
+colors.discard("purple")        # No error if not found
+
+# Set mathematics
+a = {1, 2, 3}
+b = {2, 3, 4}
+a | b       # Union: {1, 2, 3, 4}
+a & b       # Intersection: {2, 3}
+a - b       # Difference: {1}
+a ^ b       # Symmetric difference: {1, 4}
+
+
+LESSON 4: CONTROL FLOW
+
+4.1 Conditional Statements
+--------------------------
+IF-ELSE
+
+age = 18
+
+if age < 13:
+    print("Child")
+elif age < 20:
+    print("Teenager")
+else:
+    print("Adult")
+
+# Ternary operator
+status = "Adult" if age >= 18 else "Minor"
+
+4.2 Loops
+---------
+FOR LOOPS
+
+# Iterate over list
+fruits = ["apple", "banana", "cherry"]
+for fruit in fruits:
+    print(fruit)
+
+# Iterate with index
+for i, fruit in enumerate(fruits):
+    print(f"{i}: {fruit}")
+
+# Range-based loop
+for i in range(5):          # 0, 1, 2, 3, 4
+    print(i)
+
+for i in range(2, 5):       # 2, 3, 4
+    print(i)
+
+for i in range(0, 10, 2):   # 0, 2, 4, 6, 8 (step of 2)
+    print(i)
+
+# Iterate over dictionary
+person = {"name": "Alice", "age": 25}
+for key, value in person.items():
+    print(f"{key}: {value}")
+
+WHILE LOOPS
+
+count = 0
+while count < 5:
+    print(count)
+    count += 1
+
+# Break and continue
+for i in range(10):
+    if i == 5:
+        break           # Exit loop
+    if i % 2 == 0:
+        continue        # Skip to next iteration
+    print(i)            # Prints 1, 3
+
+
+LESSON 5: FUNCTIONS
+
+5.1 Defining Functions
+----------------------
+def greet(name):
+    """Return a greeting message."""
+    return f"Hello, {name}!"
+
+message = greet("Alice")
+print(message)          # "Hello, Alice!"
+
+5.2 Parameters and Arguments
+----------------------------
+# Default parameters
+def greet(name, greeting="Hello"):
+    return f"{greeting}, {name}!"
+
+greet("Alice")              # "Hello, Alice!"
+greet("Alice", "Hi")        # "Hi, Alice!"
+
+# Keyword arguments
+def create_user(name, age, city):
+    return {"name": name, "age": age, "city": city}
+
+user = create_user(name="Alice", city="NYC", age=25)
+
+# Variable arguments
+def sum_all(*args):
+    return sum(args)
+
+sum_all(1, 2, 3, 4)        # 10
+
+def print_info(**kwargs):
+    for key, value in kwargs.items():
+        print(f"{key}: {value}")
+
+print_info(name="Alice", age=25)
+
+5.3 Lambda Functions
+--------------------
+Anonymous, single-expression functions.
+
+# Regular function
+def square(x):
+    return x ** 2
+
+# Lambda equivalent
+square = lambda x: x ** 2
+
+# Common use: sorting
+students = [("Alice", 85), ("Bob", 92), ("Charlie", 78)]
+sorted_by_grade = sorted(students, key=lambda s: s[1])
+
+# With map, filter
+numbers = [1, 2, 3, 4, 5]
+squared = list(map(lambda x: x**2, numbers))      # [1, 4, 9, 16, 25]
+evens = list(filter(lambda x: x % 2 == 0, numbers))   # [2, 4]
+
+
+LESSON 6: FILE HANDLING
+
+6.1 Reading Files
+-----------------
+# Basic reading
+with open("data.txt", "r") as file:
+    content = file.read()       # Read entire file
+
+# Read lines
+with open("data.txt", "r") as file:
+    lines = file.readlines()    # List of lines
+
+# Read line by line (memory efficient)
+with open("data.txt", "r") as file:
+    for line in file:
+        print(line.strip())     # Remove newline
+
+6.2 Writing Files
+-----------------
+# Write (overwrites existing)
+with open("output.txt", "w") as file:
+    file.write("Hello, World!\n")
+
+# Append
+with open("output.txt", "a") as file:
+    file.write("Another line\n")
+
+# Write multiple lines
+lines = ["Line 1\n", "Line 2\n", "Line 3\n"]
+with open("output.txt", "w") as file:
+    file.writelines(lines)
+
+
+PRACTICE EXERCISES
+
+Exercise 1: FizzBuzz
+--------------------
+Write a program that prints numbers 1 to 100.
+- For multiples of 3, print "Fizz"
+- For multiples of 5, print "Buzz"
+- For multiples of both, print "FizzBuzz"
+
+Exercise 2: Word Counter
+------------------------
+Write a function that takes a string and returns a dictionary with word counts.
+
+Exercise 3: List Operations
+---------------------------
+Write functions to:
+- Find the second largest number in a list
+- Remove duplicates while preserving order
+- Rotate a list by n positions
+
+Exercise 4: File Analysis
+-------------------------
+Write a program that reads a text file and reports:
+- Number of lines
+- Number of words
+- Number of characters
+- Most common word
+
+
+NEXT LESSON
+
+Lesson 7: Object-Oriented Programming
+- Classes and objects
+- Inheritance
+- Encapsulation
+- Polymorphism

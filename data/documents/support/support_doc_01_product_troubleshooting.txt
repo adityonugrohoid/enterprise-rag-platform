@@ -1,0 +1,146 @@
+PRODUCT TROUBLESHOOTING GUIDE
+CloudSync Pro v4.2
+========================================
+
+1. COMMON ISSUES AND SOLUTIONS
+
+1.1 Sync Failures
+-----------------
+Problem: Files not syncing to cloud
+Symptoms: Orange warning icon, "Sync pending" status for more than 10 minutes
+
+Solutions:
+a) Check internet connection - Run network diagnostics from Settings > Network
+b) Verify account status - Ensure subscription is active at account.cloudsync.com
+c) Clear sync cache - Settings > Advanced > Clear Cache > Restart application
+d) Check file size - Individual files must be under 5GB for standard plans
+e) Verify file permissions - Ensure CloudSync has read access to the folder
+
+Error Code CS-401: Authentication expired
+- Sign out and sign back in
+- If persists, revoke app access at account.cloudsync.com/security and re-authorize
+
+Error Code CS-507: Server unavailable
+- Check status.cloudsync.com for outages
+- Try switching server region in Settings > Connection > Server Region
+
+1.2 Installation Problems
+-------------------------
+Problem: Installation fails on Windows
+Error: "Missing Visual C++ Runtime"
+
+Solution:
+1. Download Visual C++ Redistributable from Microsoft
+2. Install both x86 and x64 versions
+3. Restart computer
+4. Re-run CloudSync installer
+
+Problem: Mac installation blocked
+Error: "App cannot be opened because it is from an unidentified developer"
+
+Solution:
+1. Open System Preferences > Security & Privacy
+2. Click "Open Anyway" next to the CloudSync message
+3. Alternatively, right-click the app and select "Open"
+
+1.3 Performance Issues
+----------------------
+Problem: High CPU usage during sync
+Cause: Large number of small files or real-time sync enabled
+
+Solutions:
+a) Enable "Batch Sync" mode - Settings > Sync > Batch Mode (syncs every 15 minutes)
+b) Exclude unnecessary folders - Settings > Folders > Manage Exclusions
+c) Limit upload bandwidth - Settings > Network > Upload Limit
+
+Problem: Slow download speeds
+Solutions:
+a) Check if other applications are using bandwidth
+b) Try different server region closer to your location
+c) Disable "Encrypt before upload" for non-sensitive files
+d) Contact support if speeds consistently below 1 Mbps
+
+
+2. ACCOUNT AND BILLING
+
+2.1 Password Reset
+------------------
+1. Go to account.cloudsync.com/reset
+2. Enter registered email address
+3. Check inbox (and spam folder) for reset link
+4. Link expires in 24 hours
+5. New password must be 12+ characters with uppercase, lowercase, number, and symbol
+
+2.2 Upgrade/Downgrade Plan
+--------------------------
+1. Log in to account.cloudsync.com
+2. Navigate to Billing > Change Plan
+3. Select new plan tier
+4. Confirm payment method
+5. Changes take effect immediately for upgrades
+6. Downgrades take effect at next billing cycle
+
+Note: Downgrading with data exceeding new plan limit will pause sync until resolved
+
+2.3 Cancel Subscription
+-----------------------
+1. Log in to account.cloudsync.com
+2. Go to Billing > Cancel Subscription
+3. Complete exit survey (optional)
+4. Download your data before cancellation date
+5. Data retained for 30 days after cancellation, then permanently deleted
+
+
+3. MOBILE APP ISSUES
+
+3.1 iOS App
+-----------
+Problem: Photos not backing up
+Solutions:
+a) Enable Photos permission: iPhone Settings > CloudSync > Photos > All Photos
+b) Ensure "Photo Backup" is enabled in CloudSync app settings
+c) Connect to WiFi (cellular backup disabled by default)
+d) Check available cloud storage quota
+
+Problem: App crashes on launch
+Solutions:
+a) Force close and reopen app
+b) Update to latest iOS version
+c) Delete and reinstall app (data safe in cloud)
+d) Report crash: Settings > Help > Send Diagnostics
+
+3.2 Android App
+---------------
+Problem: Background sync stops
+Cause: Battery optimization killing app
+
+Solution:
+1. Go to Android Settings > Apps > CloudSync
+2. Select Battery > Unrestricted
+3. Disable "Adaptive Battery" for CloudSync
+4. For Samsung: Also disable in Device Care > Battery
+
+Problem: Storage access denied
+Solution:
+1. Settings > Apps > CloudSync > Permissions
+2. Enable "Files and media" permission
+3. Select "Allow all files access"
+
+
+4. CONTACT SUPPORT
+
+Email: support@cloudsync.com
+Response time: 24-48 hours for standard, 4 hours for premium
+
+Live Chat: Available in-app or at cloudsync.com/chat
+Hours: Monday-Friday 9AM-6PM EST
+
+Phone Support (Premium only): 1-800-CLOUDSYNC
+Hours: Monday-Friday 8AM-8PM EST
+
+Before contacting support, please have ready:
+- Account email address
+- Operating system and version
+- CloudSync version number (Help > About)
+- Error codes or screenshots
+- Steps to reproduce the issue

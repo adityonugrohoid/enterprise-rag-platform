@@ -1,0 +1,349 @@
+MACHINE LEARNING FUNDAMENTALS
+Course Materials - Module 1
+========================================
+Course: CS-ML101
+Instructor: Dr. Sarah Chen
+Version: Spring 2026
+
+
+CHAPTER 1: INTRODUCTION TO MACHINE LEARNING
+
+1.1 What is Machine Learning?
+-----------------------------
+Machine Learning (ML) is a subset of artificial intelligence that enables systems to learn and improve from experience without being explicitly programmed. Instead of writing rules, we provide data and let algorithms discover patterns.
+
+Traditional Programming:
+Input + Rules → Output
+
+Machine Learning:
+Input + Output → Rules (Model)
+
+1.2 Types of Machine Learning
+-----------------------------
+
+SUPERVISED LEARNING
+The algorithm learns from labeled training data to make predictions.
+
+Examples:
+- Email spam detection (spam/not spam labels)
+- House price prediction (price labels)
+- Medical diagnosis (disease/no disease labels)
+
+Key algorithms:
+- Linear Regression (continuous output)
+- Logistic Regression (classification)
+- Decision Trees
+- Random Forests
+- Support Vector Machines (SVM)
+- Neural Networks
+
+UNSUPERVISED LEARNING
+The algorithm finds patterns in unlabeled data.
+
+Examples:
+- Customer segmentation
+- Anomaly detection
+- Topic modeling in documents
+
+Key algorithms:
+- K-Means Clustering
+- Hierarchical Clustering
+- Principal Component Analysis (PCA)
+- Autoencoders
+
+REINFORCEMENT LEARNING
+The algorithm learns through trial and error, receiving rewards or penalties.
+
+Examples:
+- Game playing (AlphaGo, chess engines)
+- Robotics control
+- Autonomous vehicles
+- Recommendation systems
+
+Key concepts:
+- Agent: The learner/decision maker
+- Environment: What the agent interacts with
+- State: Current situation
+- Action: What the agent can do
+- Reward: Feedback from the environment
+
+1.3 The Machine Learning Pipeline
+---------------------------------
+1. Problem Definition
+   - What are we trying to predict/discover?
+   - What metrics define success?
+
+2. Data Collection
+   - Gather relevant data
+   - Ensure data quality and quantity
+
+3. Data Preprocessing
+   - Handle missing values
+   - Encode categorical variables
+   - Normalize/standardize features
+
+4. Feature Engineering
+   - Create meaningful features
+   - Select relevant features
+   - Reduce dimensionality if needed
+
+5. Model Selection
+   - Choose appropriate algorithms
+   - Consider complexity vs. interpretability
+
+6. Training
+   - Split data (train/validation/test)
+   - Fit model to training data
+   - Tune hyperparameters
+
+7. Evaluation
+   - Assess performance on test data
+   - Check for overfitting/underfitting
+
+8. Deployment
+   - Deploy model to production
+   - Monitor performance
+   - Retrain as needed
+
+
+CHAPTER 2: DATA PREPROCESSING
+
+2.1 Handling Missing Data
+-------------------------
+Strategies:
+
+DELETION
+- Remove rows with missing values
+- Use when: Few missing values, data is plentiful
+- Risk: Losing valuable information
+
+IMPUTATION
+- Mean/Median: Replace with column average
+  - Use median for skewed distributions
+  - Use mean for normal distributions
+
+- Mode: Replace with most frequent value
+  - Use for categorical data
+
+- Predictive: Use ML model to predict missing values
+  - Most sophisticated approach
+  - Risk of introducing bias
+
+- Forward/Backward Fill: Use previous/next value
+  - Use for time series data
+
+2.2 Feature Scaling
+-------------------
+Why scale? Many algorithms perform better when features are on similar scales.
+
+STANDARDIZATION (Z-score normalization)
+Formula: z = (x - μ) / σ
+Result: Mean = 0, Standard Deviation = 1
+Use when: Data is normally distributed, algorithm uses distance (SVM, KNN)
+
+NORMALIZATION (Min-Max scaling)
+Formula: x_norm = (x - x_min) / (x_max - x_min)
+Result: Values between 0 and 1
+Use when: Need bounded values, neural networks
+
+2.3 Encoding Categorical Variables
+-----------------------------------
+LABEL ENCODING
+Assign integer to each category: Red=0, Green=1, Blue=2
+Use when: Ordinal data (has natural order)
+Caution: May imply false ordering
+
+ONE-HOT ENCODING
+Create binary column for each category:
+Red:   [1, 0, 0]
+Green: [0, 1, 0]
+Blue:  [0, 0, 1]
+Use when: Nominal data (no natural order)
+Caution: High cardinality causes curse of dimensionality
+
+
+CHAPTER 3: MODEL EVALUATION
+
+3.1 Train/Test Split
+--------------------
+Why split data?
+- Training data: Used to fit the model
+- Test data: Used to evaluate performance on unseen data
+
+Typical split: 80% train, 20% test
+Important: Test data should never influence training
+
+3.2 Cross-Validation
+--------------------
+K-FOLD CROSS-VALIDATION
+1. Split data into K equal parts (folds)
+2. Train on K-1 folds, validate on 1 fold
+3. Repeat K times, each fold as validation once
+4. Average the K performance scores
+
+Benefits:
+- More reliable estimate of model performance
+- Uses all data for both training and validation
+- Reduces variance in evaluation
+
+Common choice: K = 5 or K = 10
+
+3.3 Classification Metrics
+--------------------------
+CONFUSION MATRIX
+                  Predicted
+                  Pos    Neg
+Actual  Pos       TP     FN
+        Neg       FP     TN
+
+TP = True Positive (correctly predicted positive)
+TN = True Negative (correctly predicted negative)
+FP = False Positive (Type I error)
+FN = False Negative (Type II error)
+
+ACCURACY
+Formula: (TP + TN) / (TP + TN + FP + FN)
+Meaning: Overall correctness
+Caution: Misleading with imbalanced classes
+
+PRECISION
+Formula: TP / (TP + FP)
+Meaning: Of predicted positives, how many are correct?
+Use when: False positives are costly (spam detection)
+
+RECALL (Sensitivity)
+Formula: TP / (TP + FN)
+Meaning: Of actual positives, how many did we find?
+Use when: False negatives are costly (disease detection)
+
+F1 SCORE
+Formula: 2 × (Precision × Recall) / (Precision + Recall)
+Meaning: Harmonic mean of precision and recall
+Use when: Need balance between precision and recall
+
+3.4 Regression Metrics
+----------------------
+MEAN ABSOLUTE ERROR (MAE)
+Formula: (1/n) × Σ|y_actual - y_predicted|
+Meaning: Average absolute difference
+Interpretation: Same units as target variable
+
+MEAN SQUARED ERROR (MSE)
+Formula: (1/n) × Σ(y_actual - y_predicted)²
+Meaning: Average squared difference
+Note: Penalizes large errors more heavily
+
+ROOT MEAN SQUARED ERROR (RMSE)
+Formula: √MSE
+Meaning: Square root of MSE
+Interpretation: Same units as target variable
+
+R² (Coefficient of Determination)
+Formula: 1 - (SS_residual / SS_total)
+Range: 0 to 1 (can be negative for poor models)
+Meaning: Proportion of variance explained by model
+Interpretation: R² = 0.8 means model explains 80% of variance
+
+
+CHAPTER 4: OVERFITTING AND REGULARIZATION
+
+4.1 Bias-Variance Tradeoff
+--------------------------
+BIAS
+- Error from oversimplified models
+- Model makes strong assumptions
+- High bias → Underfitting
+- Symptoms: Poor training AND test performance
+
+VARIANCE
+- Error from oversensitive models
+- Model fits noise in training data
+- High variance → Overfitting
+- Symptoms: Good training, poor test performance
+
+GOAL: Find balance between bias and variance
+
+4.2 Detecting Overfitting
+-------------------------
+Signs of overfitting:
+- Training accuracy >> Test accuracy
+- Model complexity too high for data size
+- Learning curves diverge
+
+Prevention strategies:
+- More training data
+- Simpler model (fewer features/parameters)
+- Regularization
+- Early stopping
+- Cross-validation
+- Dropout (for neural networks)
+
+4.3 Regularization Techniques
+-----------------------------
+L1 REGULARIZATION (Lasso)
+- Adds sum of absolute weights to loss
+- Loss = Original Loss + λ × Σ|w|
+- Effect: Drives some weights to exactly zero
+- Use case: Feature selection
+
+L2 REGULARIZATION (Ridge)
+- Adds sum of squared weights to loss
+- Loss = Original Loss + λ × Σw²
+- Effect: Shrinks all weights toward zero
+- Use case: Preventing overfitting
+
+ELASTIC NET
+- Combines L1 and L2
+- Loss = Original Loss + λ1 × Σ|w| + λ2 × Σw²
+- Use case: When many correlated features
+
+
+CHAPTER 5: PRACTICAL EXERCISES
+
+Exercise 1: Data Preprocessing
+------------------------------
+Given a dataset with missing values and mixed data types:
+1. Identify columns with missing data
+2. Decide on imputation strategy for each
+3. Apply appropriate encoding for categorical variables
+4. Scale numerical features
+
+Exercise 2: Model Comparison
+----------------------------
+Using the preprocessed data:
+1. Split into train/test sets (80/20)
+2. Train 3 different models
+3. Evaluate using appropriate metrics
+4. Compare results and select best model
+
+Exercise 3: Cross-Validation
+----------------------------
+1. Implement 5-fold cross-validation
+2. Calculate mean and standard deviation of scores
+3. Compare to simple train/test split results
+
+
+STUDY QUESTIONS
+
+1. What is the difference between supervised and unsupervised learning?
+2. Why do we split data into training and test sets?
+3. When would you use precision vs. recall as your primary metric?
+4. What is overfitting and how can you prevent it?
+5. Explain the bias-variance tradeoff.
+
+
+RECOMMENDED READING
+
+- "Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow" by Aurélien Géron
+- "Pattern Recognition and Machine Learning" by Christopher Bishop
+- "The Elements of Statistical Learning" by Hastie, Tibshirani, and Friedman
+- Scikit-learn documentation: scikit-learn.org
+
+
+NEXT MODULE
+
+Module 2: Deep Learning Fundamentals
+- Neural network architecture
+- Backpropagation
+- Convolutional Neural Networks
+- Recurrent Neural Networks

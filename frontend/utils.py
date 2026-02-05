@@ -15,36 +15,71 @@ from config import (
 )
 
 
-def scan_documents() -> List[str]:
+def scan_documents() -> Dict[str, List[str]]:
     """
-    Scan the documents directory for supported files.
-    
+    Scan the documents directory for supported files, organized by category.
+
     Returns:
-        List of document filenames
+        Dictionary mapping category names to lists of document filenames
+    """
+    if not DOCUMENTS_DIR.exists():
+        return {}
+
+    documents_by_category = {}
+
+    # Scan subdirectories (categories)
+    for category_dir in sorted(DOCUMENTS_DIR.iterdir()):
+        if category_dir.is_dir() and not category_dir.name.startswith('.'):
+            category_name = category_dir.name
+            category_docs = []
+
+            for ext in SUPPORTED_EXTENSIONS:
+                category_docs.extend([f.name for f in category_dir.glob(f"*{ext}")])
+
+            # Filter out system files
+            category_docs = [d for d in category_docs if not d.startswith('.')]
+
+            if category_docs:
+                documents_by_category[category_name] = sorted(category_docs)
+
+    return documents_by_category
+
+
+def scan_documents_flat() -> List[str]:
+    """
+    Scan the documents directory for supported files (flat list with paths).
+
+    Returns:
+        List of relative document paths (category/filename)
     """
     if not DOCUMENTS_DIR.exists():
         return []
-    
+
     documents = []
-    for ext in SUPPORTED_EXTENSIONS:
-        documents.extend([f.name for f in DOCUMENTS_DIR.glob(f"*{ext}")])
-    
-    # Filter out .gitkeep and other system files
-    documents = [d for d in documents if not d.startswith('.')]
+
+    # Scan subdirectories (categories)
+    for category_dir in sorted(DOCUMENTS_DIR.iterdir()):
+        if category_dir.is_dir() and not category_dir.name.startswith('.'):
+            for ext in SUPPORTED_EXTENSIONS:
+                for f in category_dir.glob(f"*{ext}"):
+                    if not f.name.startswith('.'):
+                        documents.append(f"{category_dir.name}/{f.name}")
+
     return sorted(documents)
 
 
-def upload_document(filename: str) -> Tuple[bool, str, Dict]:
+def upload_document(doc_path: str) -> Tuple[bool, str, Dict]:
     """
     Upload a document to the ingestion service.
-    
+
     Args:
-        filename: Name of the document file
-        
+        doc_path: Path to the document file (category/filename or just filename)
+
     Returns:
         Tuple of (success, message, data)
     """
-    file_path = DOCUMENTS_DIR / filename
+    file_path = DOCUMENTS_DIR / doc_path
+    filename = Path(doc_path).name
     
     if not file_path.exists():
         return False, f"File not found: {filename}", {}
@@ -189,7 +224,7 @@ def query_direct_llm(query: str) -> Tuple[bool, str, Dict]:
 def check_services_health() -> Dict[str, bool]:
     """
     Check health of backend services.
-    
+
     Returns:
         Dictionary with service names and their health status
     """
@@ -197,7 +232,7 @@ def check_services_health() -> Dict[str, bool]:
         "api_gateway": False,
         "ollama": False
     }
-    
+
     # Check API Gateway
     try:
         with httpx.Client(timeout=5.0) as client:
@@ -205,7 +240,7 @@ def check_services_health() -> Dict[str, bool]:
             health_status["api_gateway"] = response.status_code == 200
     except:
         pass
-    
+
     # Check Ollama
     try:
         with httpx.Client(timeout=5.0) as client:
@@ -213,5 +248,91 @@ def check_services_health() -> Dict[str, bool]:
             health_status["ollama"] = response.status_code == 200
     except:
         pass
-    
+
     return health_status
+
+
+def get_indexed_document_count() -> Tuple[int, List[str]]:
+    """
+    Get count and list of documents indexed in the vector database.
+
+    Returns:
+        Tuple of (document_count, list_of_document_names)
+    """
+    try:
+        headers = {"X-API-Key": API_KEY}
+
+        with httpx.Client(timeout=10.0) as client:
+            # Try to get document list from API if endpoint exists
+            response = client.get(
+                f"{API_GATEWAY_URL}/documents",
+                headers=headers
+            )
+            if response.status_code == 200:
+                data = response.json()
+                docs = data.get("documents", [])
+                return len(docs), docs
+    except:
+        pass
+
+    # Fallback: Query ChromaDB directly if available
+    try:
+        import chromadb
+        from chromadb.config import Settings
+        client = chromadb.HttpClient(
+            host="localhost",
+            port=8000,
+            settings=Settings(anonymized_telemetry=False)
+        )
+        collection = client.get_or_create_collection("documents")
+
+        # Get unique document filenames
+        results = collection.get(include=["metadatas"])
+        if results and results.get("metadatas"):
+            filenames = set()
+            for meta in results["metadatas"]:
+                if meta and "filename" in meta:
+                    filenames.add(meta["filename"])
+            return len(filenames), sorted(list(filenames))
+
+        # If no metadata, return chunk count estimate
+        count = collection.count()
+        return count, []
+    except:
+        pass
+
+    return 0, []
+
+
+def clear_indexed_documents() -> Tuple[bool, str, int]:
+    """
+    Clear all documents from the vector database.
+
+    Returns:
+        Tuple of (success, message, deleted_count)
+    """
+    try:
+        headers = {"X-API-Key": API_KEY}
+
+        with httpx.Client(timeout=30.0) as client:
+            response = client.delete(
+                f"{API_GATEWAY_URL}/documents",
+                headers=headers
+            )
+            response.raise_for_status()
+
+            data = response.json()
+            deleted_count = data.get("deleted_count", 0)
+            return True, f"Cleared {deleted_count} chunks from database", deleted_count
+
+    except httpx.HTTPError as e:
+        error_msg = f"HTTP error: {str(e)}"
+        if hasattr(e, 'response') and e.response is not None:
+            try:
+                error_detail = e.response.json().get('detail', str(e))
+                error_msg = f"Clear failed: {error_detail}"
+            except:
+                pass
+        return False, error_msg, 0
+    except Exception as e:
+        return False, f"Error: {str(e)}", 0

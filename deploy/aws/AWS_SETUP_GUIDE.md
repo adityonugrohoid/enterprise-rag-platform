@@ -1,10 +1,10 @@
 # AWS Setup Guide
 
-This guide covers the prerequisites you need to complete in your AWS account before running the deployment scripts.
+Complete guide for deploying the Enterprise RAG Platform on AWS with GPU-accelerated inference.
 
 > **Last Updated:** February 2026
 >
-> **Sources:** [AWS IAM Documentation](https://docs.aws.amazon.com/IAM/latest/UserGuide/), [AWS EC2 Key Pairs](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/create-key-pairs.html), [AWS CLI Installation](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html), [Ubuntu on AWS](https://documentation.ubuntu.com/aws/aws-how-to/instances/find-ubuntu-images/)
+> **Architecture:** AWS EC2 GPU Instance + Ollama (Self-hosted Llama 3.1)
 
 ---
 
@@ -14,6 +14,7 @@ This guide covers the prerequisites you need to complete in your AWS account bef
 - [ ] IAM User with programmatic access (Access Key ID + Secret Access Key)
 - [ ] AWS CLI installed and configured
 - [ ] EC2 Key Pair created and downloaded
+- [ ] GPU quota approved (if needed)
 - [ ] Configuration file updated (`config.env`)
 
 ---
@@ -28,8 +29,6 @@ This guide covers the prerequisites you need to complete in your AWS account bef
 ---
 
 ## Step 2: Create IAM User with Access Keys
-
-AWS recommends using [IAM Identity Center](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html) for human users, but for simplicity in this deployment, we'll create a traditional IAM user with access keys.
 
 ### 2.1 Sign in to AWS Console
 
@@ -49,7 +48,7 @@ AWS recommends using [IAM Identity Center](https://docs.aws.amazon.com/IAM/lates
 ### 2.4 Set User Details
 
 1. **User name:** `rag-platform-deployer`
-2. Leave **Provide user access to the AWS Management Console** unchecked (we only need programmatic access)
+2. Leave **Provide user access to the AWS Management Console** unchecked
 3. Click **Next**
 
 ### 2.5 Set Permissions
@@ -76,15 +75,10 @@ After the user is created:
 ### 2.8 Select Use Case
 
 1. Select **Command Line Interface (CLI)**
-2. Check the confirmation box at the bottom ("I understand the above recommendation...")
+2. Check the confirmation box at the bottom
 3. Click **Next**
 
-### 2.9 Set Description Tag (Optional)
-
-1. Description tag value: `RAG Platform Deployment`
-2. Click **Create access key**
-
-### 2.10 Save Your Credentials
+### 2.9 Save Your Credentials
 
 **IMPORTANT: This is your only chance to save the Secret Access Key!**
 
@@ -93,14 +87,12 @@ After the user is created:
    - **Secret access key:** something like `wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY`
 
 2. Click **Download .csv file** to save both keys
-3. Store this file securely (you'll need these in Step 4)
+3. Store this file securely
 4. Click **Done**
 
 ---
 
 ## Step 3: Install AWS CLI
-
-The AWS CLI (Command Line Interface) lets you manage AWS from your terminal.
 
 ### For Linux / WSL (Windows Subsystem for Linux)
 
@@ -116,7 +108,6 @@ sudo ./aws/install
 
 # Verify installation
 aws --version
-# Should show: aws-cli/2.x.x Python/3.x.x Linux/...
 
 # Clean up
 rm -rf awscliv2.zip aws/
@@ -142,58 +133,22 @@ rm AWSCLIV2.pkg
 
 1. Download the installer: [https://awscli.amazonaws.com/AWSCLIV2.msi](https://awscli.amazonaws.com/AWSCLIV2.msi)
 2. Run the downloaded MSI installer
-3. Follow the installation wizard
-4. Open a new Command Prompt or PowerShell and verify:
-   ```cmd
-   aws --version
-   ```
-
-### Alternative: Install via Snap (Linux)
-
-```bash
-sudo snap install aws-cli --classic
-aws --version
-```
+3. Open Command Prompt and verify: `aws --version`
 
 ---
 
 ## Step 4: Configure AWS CLI
 
-Now connect your AWS CLI to your AWS account using the access keys from Step 2.
-
 ```bash
 aws configure
 ```
 
-You'll be prompted for four pieces of information:
-
 | Prompt | What to Enter |
 |--------|---------------|
-| AWS Access Key ID | Paste your Access Key ID from Step 2.10 |
-| AWS Secret Access Key | Paste your Secret Access Key from Step 2.10 |
-| Default region name | `us-east-1` (or your preferred region, see note below) |
+| AWS Access Key ID | Your Access Key ID from Step 2 |
+| AWS Secret Access Key | Your Secret Access Key from Step 2 |
+| Default region name | `ap-southeast-1` (or your preferred region) |
 | Default output format | `json` |
-
-**Example session:**
-```
-$ aws configure
-AWS Access Key ID [None]: AKIAIOSFODNN7EXAMPLE
-AWS Secret Access Key [None]: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-Default region name [None]: us-east-1
-Default output format [None]: json
-```
-
-### Region Selection
-
-Choose a region close to your users for better latency:
-
-| Region Code | Location |
-|-------------|----------|
-| `us-east-1` | N. Virginia (cheapest, most services) |
-| `us-west-2` | Oregon |
-| `eu-west-1` | Ireland |
-| `ap-southeast-1` | Singapore |
-| `ap-northeast-1` | Tokyo |
 
 ### Verify Configuration
 
@@ -201,7 +156,7 @@ Choose a region close to your users for better latency:
 aws sts get-caller-identity
 ```
 
-**Expected output:**
+Expected output:
 ```json
 {
     "UserId": "AIDAEXAMPLEEXAMPLE",
@@ -210,168 +165,148 @@ aws sts get-caller-identity
 }
 ```
 
-If you see your account information, the CLI is configured correctly!
+---
+
+## Step 5: Check GPU Instance Quota
+
+GPU instances require quota approval. Check if you have quota:
+
+```bash
+aws service-quotas get-service-quota \
+    --service-code ec2 \
+    --quota-code L-DB2E81BA \
+    --region ap-southeast-1 \
+    --query 'Quota.Value'
+```
+
+If the value is `0`, you need to request a quota increase:
+
+### Request GPU Quota (if needed)
+
+1. Go to AWS Console → **Service Quotas** → **EC2**
+2. Search for "Running On-Demand G and VT instances"
+3. Click **Request quota increase**
+4. Request at least **4 vCPUs** (for g4dn.xlarge)
+5. Wait for approval (usually 24-48 hours)
 
 ---
 
-## Step 5: Create EC2 Key Pair
+## Step 6: Create EC2 Key Pair
 
-A key pair lets you securely SSH into your EC2 instance.
+### 6.1 Navigate to EC2
 
-### 5.1 Navigate to EC2
-
-1. In AWS Console, search for **EC2** in the top search bar
+1. In AWS Console, search for **EC2**
 2. Click on **EC2**
 
-### 5.2 Go to Key Pairs
+### 6.2 Go to Key Pairs
 
-1. In the left sidebar, scroll down to **Network & Security**
+1. In the left sidebar, scroll to **Network & Security**
 2. Click **Key Pairs**
 
-### 5.3 Create Key Pair
+### 6.3 Create Key Pair
 
-1. Click **Create key pair** (orange button, top right)
-
-### 5.4 Configure Key Pair
-
-Fill in the form:
+1. Click **Create key pair**
+2. Fill in:
 
 | Field | Value |
 |-------|-------|
 | **Name** | `rag-platform-key` |
 | **Key pair type** | RSA |
-| **Private key file format** | `.pem` (for Linux/macOS) or `.ppk` (for PuTTY on Windows) |
+| **Private key file format** | `.pem` |
 
-### 5.5 Create and Download
+3. Click **Create key pair**
+4. The `.pem` file will download automatically
 
-1. Click **Create key pair**
-2. Your browser will automatically download the `.pem` file
-3. **Save this file!** You cannot download it again.
-
-### 5.6 Secure the Key File
-
-**On Linux/macOS/WSL:**
+### 6.4 Secure the Key File
 
 ```bash
 # Move to SSH directory
 mkdir -p ~/.ssh
 mv ~/Downloads/rag-platform-key.pem ~/.ssh/
 
-# Set correct permissions (REQUIRED - SSH will refuse to use the key otherwise)
+# Set correct permissions (REQUIRED)
 chmod 400 ~/.ssh/rag-platform-key.pem
 
 # Verify
 ls -la ~/.ssh/rag-platform-key.pem
-# Should show: -r-------- ... rag-platform-key.pem
-```
-
-**On Windows (if using WSL):**
-
-```bash
-# Copy from Windows Downloads to WSL
-cp /mnt/c/Users/YOUR_USERNAME/Downloads/rag-platform-key.pem ~/.ssh/
-chmod 400 ~/.ssh/rag-platform-key.pem
 ```
 
 ---
 
-## Step 6: Get the Ubuntu AMI ID
+## Step 7: Get Ubuntu AMI ID
 
-We'll use Ubuntu 24.04 LTS, which is supported until April 2029.
-
-### Option A: Using SSM Parameter (Recommended)
-
-This automatically gets the latest official Ubuntu AMI:
+Get the latest Ubuntu 24.04 LTS AMI for your region:
 
 ```bash
-# Get Ubuntu 24.04 LTS AMI ID for your region
 aws ssm get-parameter \
     --name /aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id \
     --query 'Parameter.Value' \
     --output text \
-    --region us-east-1
+    --region ap-southeast-1
 ```
 
-**Example output:**
-```
-ami-0abcdef1234567890
-```
-
-Copy this AMI ID for the next step.
-
-### Option B: Using EC2 describe-images
-
-```bash
-aws ec2 describe-images \
-    --owners 099720109477 \
-    --filters "Name=name,Values=ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*" \
-    --query 'sort_by(Images, &CreationDate)[-1].ImageId' \
-    --output text \
-    --region us-east-1
-```
-
-### Option C: Manual Lookup (AWS Console)
-
-1. Go to EC2 → **AMIs** (left sidebar under Images)
-2. Change filter from "Owned by me" to **Public images**
-3. Search for: `ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server`
-4. Sort by **Creation date** (newest first)
-5. Copy the **AMI ID** of the first result
+Copy the AMI ID (e.g., `ami-08d59269edddde222`).
 
 ---
 
-## Step 7: Update Configuration File
+## Step 8: Update Configuration File
 
-Edit the deployment configuration with your values:
+Edit the deployment configuration:
 
 ```bash
-# From project root
 nano deploy/aws/config.env
 ```
 
 ### Required Changes
 
 ```bash
-# AWS Region (same as you used in aws configure)
-AWS_REGION="us-east-1"
+# AWS Region
+AWS_REGION="ap-southeast-1"
 
-# AMI ID from Step 6
-AMI_ID="ami-0abcdef1234567890"  # Replace with your actual AMI ID
+# AMI ID from Step 7
+AMI_ID="ami-08d59269edddde222"
 
-# Key pair name (must match exactly what you created in Step 5)
+# Key pair name (must match exactly)
 KEY_PAIR_NAME="rag-platform-key"
 ```
 
-### Recommended Security Setting
+### GPU Instance Selection
+
+```bash
+# GPU instances for Ollama inference:
+#   g4dn.xlarge  - NVIDIA T4 (16GB), 4 vCPU, 16GB RAM (~$0.53/hr)
+#   g4dn.2xlarge - NVIDIA T4 (16GB), 8 vCPU, 32GB RAM (~$0.75/hr)
+#   g5.xlarge    - NVIDIA A10G (24GB), 4 vCPU, 16GB RAM (~$1.01/hr)
+INSTANCE_TYPE="g4dn.xlarge"
+```
+
+### LLM Model Selection
+
+```bash
+# Recommended models for NVIDIA T4 (16GB VRAM):
+#   llama3.1:8b  - Best quality/speed balance (recommended)
+#   mistral:7b   - Fast, good quality
+#   qwen2.5:7b   - Good for multilingual
+OLLAMA_MODEL="llama3.1:8b"
+```
+
+### Security Setting (Recommended)
 
 ```bash
 # Get your current public IP
 curl -s ifconfig.me
 
-# Add to config.env with /32 suffix (restricts SSH to only your IP)
-MY_IP="203.0.113.50/32"  # Replace with YOUR IP from above
-```
-
-### Optional Settings
-
-```bash
-# Instance type (default is fine for most cases)
-INSTANCE_TYPE="t3.xlarge"     # 4 vCPU, 16GB RAM (~$55/month)
-# INSTANCE_TYPE="t3.large"    # 2 vCPU, 8GB RAM (~$30/month) - budget option
-
-# Domain name (only if you have one)
-DOMAIN_NAME=""                # e.g., "rag.yourdomain.com"
+# Restrict SSH to your IP only
+MY_IP="YOUR_IP/32"
 ```
 
 ### Save and Exit
 
-- In nano: Press `Ctrl+X`, then `Y`, then `Enter`
+Press `Ctrl+X`, then `Y`, then `Enter`
 
 ---
 
-## Step 8: Run Deployment
-
-You're now ready to deploy!
+## Step 9: Run Deployment
 
 ```bash
 cd deploy/aws
@@ -379,222 +314,131 @@ cd deploy/aws
 # Step 1: Create AWS infrastructure (~3-5 minutes)
 ./01-deploy-infrastructure.sh
 
-# Wait 2-3 minutes for the instance to fully initialize
+# Wait 2-3 minutes for instance initialization
 
-# Step 2: Deploy application (~15-20 minutes)
+# Step 2: Deploy application with GPU (~15-20 minutes)
+# This includes NVIDIA driver installation and model download
 ./02-deploy-application.sh
 
-# Step 3: Configure production (Nginx, SSL) (~5 minutes)
+# Step 3: Configure Nginx (~2 minutes)
 ./03-configure-production.sh
+
+# Step 4: Verify deployment
+./04-verify-deployment.sh
 ```
 
 ---
 
-## Step 9: Post-Deployment Testing
+## Step 10: Post-Deployment Testing
 
-After deployment completes, run these tests to verify everything is working:
-
-### 9.1 Health Check
+### 10.1 Health Check
 
 ```bash
-# Replace YOUR_SERVER_IP with your actual Elastic IP
-curl http://YOUR_SERVER_IP/health
+# Get your Elastic IP from deployment output
+curl http://YOUR_ELASTIC_IP/health
 ```
 
-**Expected response:**
+Expected response:
 ```json
-{"status":"healthy","services":{"ingestion":"healthy","query":"healthy"},"service":"api_gateway"}
+{"status":"healthy","services":{"ingestion":"healthy","query":"healthy"}}
 ```
 
-If you see `"status":"degraded"`, check the service status on the server.
-
-### 9.2 Document Upload Test
+### 10.2 Check GPU Status
 
 ```bash
-# Get your API key from deploy/aws/api-key.txt
+ssh -i ~/.ssh/rag-platform-key.pem ubuntu@YOUR_ELASTIC_IP nvidia-smi
+```
+
+Expected output shows NVIDIA T4 with driver version.
+
+### 10.3 Document Upload Test
+
+```bash
 API_KEY=$(cat deploy/aws/api-key.txt)
 
-# Create a test document
-echo "This is a test document about artificial intelligence and machine learning." > test_doc.txt
-
-# Upload the document
-curl -X POST http://YOUR_SERVER_IP/documents/upload \
+curl -X POST http://YOUR_ELASTIC_IP/documents/upload \
   -H "X-API-Key: $API_KEY" \
-  -F "file=@test_doc.txt"
+  -F "file=@data/documents/internal_doc_00_network_performance_standards.txt"
 ```
 
-**Expected response:**
-```json
-{"document_id":"...","filename":"test_doc.txt","chunks_created":1,"message":"Document ingested successfully"}
-```
-
-### 9.3 Query Test
+### 10.4 Query Test
 
 ```bash
 API_KEY=$(cat deploy/aws/api-key.txt)
 
-curl -X POST http://YOUR_SERVER_IP/query \
+curl -X POST http://YOUR_ELASTIC_IP/query \
   -H "Content-Type: application/json" \
   -H "X-API-Key: $API_KEY" \
-  -d '{"query": "What is this document about?"}'
+  -d '{"query": "What are the 5G performance targets?"}'
 ```
 
-**Expected response:**
-```json
-{"answer":"...","sources":["test_doc.txt"],"chunks_used":1}
-```
+Response time should be **2-5 seconds** with GPU acceleration.
 
-### 9.4 Web UI Test
+### 10.5 Web UI
 
-Open your browser and navigate to:
-```
-http://YOUR_SERVER_IP/ui
-```
-
-You should see the Streamlit-based Enterprise RAG Platform UI.
-
-### 9.5 Verify Auto-Restart on Reboot
-
-To test that services restart automatically after a server reboot:
-
-```bash
-# SSH into the server
-ssh -i ~/.ssh/rag-platform-key.pem ubuntu@YOUR_SERVER_IP
-
-# Reboot the server
-sudo reboot
-```
-
-Wait 2-3 minutes, then test:
-
-```bash
-# Check Docker containers are running
-curl http://YOUR_SERVER_IP/health
-```
-
-All services should be healthy without manual intervention.
+Open your browser: `http://YOUR_ELASTIC_IP/ui`
 
 ---
 
 ## Troubleshooting
 
-### "Invalid API key" Error
-
-If you get `{"detail":"Invalid API key"}` when making API requests:
-
-1. **Verify you're using the correct API key:**
-   ```bash
-   cat deploy/aws/api-key.txt
-   ```
-
-2. **Check the API key on the server matches:**
-   ```bash
-   ssh -i ~/.ssh/rag-platform-key.pem ubuntu@YOUR_SERVER_IP
-   grep API_KEY /opt/rag-platform/.env
-   ```
-
-3. **Ensure services are loading the .env file:**
-   ```bash
-   sudo systemctl restart rag-api-gateway
-   sudo journalctl -u rag-api-gateway -n 20
-   ```
-
-### Docker Containers Not Running After Reboot
-
-If `docker compose ps` shows no containers after server reboot:
+### GPU Not Detected
 
 ```bash
-# SSH into the server
-ssh -i ~/.ssh/rag-platform-key.pem ubuntu@YOUR_SERVER_IP
+# SSH to server
+ssh -i ~/.ssh/rag-platform-key.pem ubuntu@YOUR_ELASTIC_IP
 
-# Start Docker containers
+# Check NVIDIA driver
+nvidia-smi
+
+# If not found, install drivers
+sudo apt-get update
+sudo apt-get install -y nvidia-driver-535
+sudo reboot
+```
+
+### Ollama Not Using GPU
+
+```bash
+# Check Ollama GPU access
+sudo docker exec ollama nvidia-smi
+
+# If no GPU, restart with GPU support
 cd /opt/rag-platform
+sudo docker compose down
 sudo docker compose up -d
-
-# Verify containers are healthy
-sudo docker compose ps
-
-# Restart systemd services
-sudo systemctl restart rag-ingestion rag-retrieval rag-query rag-api-gateway rag-ui
 ```
 
-### Services Show "Degraded" Status
+### "InsufficientInstanceCapacity" Error
 
-If health check returns `"status":"degraded"`:
+GPU instances have limited availability. Try:
+1. Different availability zone (change region)
+2. Different GPU instance type (g5.xlarge instead of g4dn.xlarge)
+3. Wait and retry later
+
+### "VcpuLimitExceeded" Error
+
+You need to request GPU quota increase (Step 5).
+
+### Services Show "Degraded"
 
 ```bash
-# Check which service is unhealthy
-curl http://YOUR_SERVER_IP/health
+# SSH and check logs
+ssh -i ~/.ssh/rag-platform-key.pem ubuntu@YOUR_ELASTIC_IP
+sudo journalctl -u rag-query -n 50
 
-# SSH and check service logs
-ssh -i ~/.ssh/rag-platform-key.pem ubuntu@YOUR_SERVER_IP
-sudo journalctl -u rag-ingestion -n 50
-sudo journalctl -u rag-retrieval -n 50
+# Restart services
+sudo systemctl restart rag-api-gateway rag-query
 ```
 
-Common causes:
-- Docker containers not running (ChromaDB, Redis, Ollama, MinIO)
-- Services started before Docker containers were healthy
+### Slow Model Downloads
 
-### "Unable to locate credentials"
+The first deployment downloads the Llama model (~4.7GB). If it times out:
 
 ```bash
-# Check if credentials are configured
-aws configure list
-
-# Reconfigure if needed
-aws configure
-```
-
-### "Key pair does not exist"
-
-```bash
-# List your key pairs
-aws ec2 describe-key-pairs --region us-east-1
-
-# Make sure the name in config.env matches exactly
-```
-
-### "Invalid AMI ID"
-
-AMI IDs are region-specific. Make sure you:
-1. Got the AMI ID for the correct region
-2. Used the exact AMI ID (starts with `ami-`)
-
-```bash
-# Get fresh AMI ID for your region
-aws ssm get-parameter \
-    --name /aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id \
-    --query 'Parameter.Value' \
-    --output text \
-    --region YOUR_REGION
-```
-
-### "Permission denied" when running scripts
-
-```bash
-chmod +x deploy/aws/*.sh
-```
-
-### SSH "Connection refused" or timeout
-
-- Wait 2-3 minutes after instance creation
-- Check that your IP matches `MY_IP` in config.env
-- Verify security group allows SSH from your IP:
-  ```bash
-  source deploy/aws/deployment-info.env
-  aws ec2 describe-security-groups --group-ids $SG_ID --region $AWS_REGION
-  ```
-
-### "Permission denied (publickey)" when SSH
-
-```bash
-# Check key file permissions
-ls -la ~/.ssh/rag-platform-key.pem
-# Must show: -r-------- (400)
-
-# Fix if needed
-chmod 400 ~/.ssh/rag-platform-key.pem
+# SSH to server and manually pull
+ssh -i ~/.ssh/rag-platform-key.pem ubuntu@YOUR_ELASTIC_IP
+sudo docker exec ollama ollama pull llama3.1:8b
 ```
 
 ---
@@ -603,87 +447,76 @@ chmod 400 ~/.ssh/rag-platform-key.pem
 
 | Resource | Specification | Monthly Cost (USD) |
 |----------|---------------|-------------------|
-| EC2 Instance | t3.xlarge (4 vCPU, 16GB RAM) | ~$55 |
-| EBS Storage | 100GB gp3 | ~$8 |
+| EC2 Instance | g4dn.xlarge (GPU) | ~$380 |
+| EBS Storage | 100GB gp3 SSD | ~$8 |
 | Elastic IP | Static public IP | ~$3.65 |
 | Data Transfer | ~100GB outbound | ~$9 |
-| **Total** | | **~$75/month** |
+| **Total** | | **~$400/month** |
 
-### Save Money
+### Cost Optimization
 
-| Option | Savings | How |
-|--------|---------|-----|
-| Spot Instance | ~70% | Add `--instance-market-options '{"MarketType":"spot"}'` to launch (may be interrupted) |
-| Reserved Instance | ~40% | Commit to 1-year term in EC2 Console |
-| Smaller Instance | ~45% | Use `t3.large` instead (slower but works) |
+| Strategy | Savings | Notes |
+|----------|---------|-------|
+| Stop when not in use | 70%+ | `aws ec2 stop-instances --instance-ids <ID>` |
+| Use g4dn.xlarge (not g5) | 50% | T4 GPU is sufficient for 8B models |
+| Reserved Instance (1yr) | 40% | Commit in EC2 Console |
 
 ---
 
 ## Cleanup (Stop All Charges)
-
-To delete all AWS resources created by this deployment:
 
 ```bash
 cd deploy/aws
 ./teardown.sh
 ```
 
-This permanently deletes:
-- EC2 instance and all data
-- Elastic IP
-- VPC and networking components
-
-**Warning:** This cannot be undone. Back up any important data first.
+This permanently deletes all resources. Back up data first!
 
 ---
 
 ## Quick Reference
 
-### SSH into your server
+### SSH Access
 
 ```bash
 ssh -i ~/.ssh/rag-platform-key.pem ubuntu@YOUR_ELASTIC_IP
 ```
 
-### Check service status (on server)
+### Check GPU
 
 ```bash
-# Check all RAG services
+ssh -i ~/.ssh/rag-platform-key.pem ubuntu@YOUR_ELASTIC_IP nvidia-smi
+```
+
+### Check Services
+
+```bash
+# On server
 sudo systemctl status rag-*
-
-# Check Docker containers
-sudo docker compose -f /opt/rag-platform/docker-compose.yaml ps
+sudo docker compose ps
 ```
 
-### View logs (on server)
+### View Logs
 
 ```bash
-# API Gateway logs
-sudo journalctl -u rag-api-gateway -f
-
-# Ingestion service logs
-sudo journalctl -u rag-ingestion -f
-
-# Streamlit UI logs
-sudo journalctl -u rag-ui -f
-
-# All RAG services
-sudo journalctl -u 'rag-*' -f
+# On server
+sudo journalctl -u rag-query -f
+sudo docker logs ollama -f
 ```
 
-### Restart services (on server)
+### Restart Services
 
 ```bash
-# Restart all services (after ensuring Docker containers are running)
-sudo docker compose -f /opt/rag-platform/docker-compose.yaml up -d
-sudo systemctl restart rag-ingestion rag-retrieval rag-query rag-api-gateway rag-ui
+# On server
+sudo docker compose restart
+sudo systemctl restart rag-api-gateway rag-query rag-ingestion rag-retrieval rag-ui
 ```
 
 ### Access Points
 
 | Service | URL |
 |---------|-----|
-| API Health | `http://YOUR_IP/health` |
+| Health Check | `http://YOUR_IP/health` |
 | Web UI | `http://YOUR_IP/ui` |
 | Document Upload | `POST http://YOUR_IP/documents/upload` |
 | Query | `POST http://YOUR_IP/query` |
@@ -692,7 +525,6 @@ sudo systemctl restart rag-ingestion rag-retrieval rag-query rag-api-gateway rag
 
 ## Additional Resources
 
-- [AWS IAM Best Practices](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html)
-- [AWS CLI Command Reference](https://docs.aws.amazon.com/cli/latest/reference/)
-- [EC2 Key Pairs Documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html)
-- [Ubuntu on AWS Documentation](https://documentation.ubuntu.com/aws/aws-how-to/instances/find-ubuntu-images/)
+- [AWS EC2 GPU Instances](https://aws.amazon.com/ec2/instance-types/g4/)
+- [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/overview.html)
+- [Ollama Documentation](https://ollama.ai/docs)

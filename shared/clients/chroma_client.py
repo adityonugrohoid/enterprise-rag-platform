@@ -38,6 +38,13 @@ class ChromaClient:
         )
         logger.info("ChromaDB client initialized")
     
+    def _ensure_collection(self) -> None:
+        """Ensure we have a valid collection reference (handles collection recreation)"""
+        self.collection = self.client.get_or_create_collection(
+            name="documents",
+            metadata={"hnsw:space": "cosine"}
+        )
+
     def add(
         self,
         embeddings: List[List[float]],
@@ -46,6 +53,8 @@ class ChromaClient:
         ids: List[str]
     ) -> None:
         """Add documents to the collection"""
+        # Refresh collection reference in case it was recreated
+        self._ensure_collection()
         self.collection.add(
             embeddings=embeddings,
             documents=documents,
@@ -60,12 +69,15 @@ class ChromaClient:
         n_results: int = 5
     ) -> Dict[str, Any]:
         """Query the collection for similar documents"""
+        # Refresh collection reference in case it was recreated
+        self._ensure_collection()
         results = self.collection.query(
             query_embeddings=query_embeddings,
             n_results=n_results
         )
         return results
-    
+
     def count(self) -> int:
         """Get total number of documents in collection"""
+        self._ensure_collection()
         return self.collection.count()

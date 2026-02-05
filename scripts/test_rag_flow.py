@@ -11,7 +11,7 @@ sys.path.insert(0, str(project_root))
 
 API_URL = "http://localhost:8080"
 API_KEY = "dev-api-key"
-TEST_DOC = project_root / "data" / "documents" / "internal_doc_00_network_performance_standards.txt"
+TEST_DOC = project_root / "data" / "documents" / "telecom" / "telecom_doc_01_network_performance_standards.txt"
 
 
 def check_health(client: httpx.Client) -> bool:

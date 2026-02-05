@@ -85,6 +85,70 @@ async def retrieve(request: RetrievalRequest) -> RetrievalResponse:
         raise HTTPException(status_code=500, detail=f"Retrieval failed: {str(e)}")
 
 
+@app.get("/documents")
+async def list_documents():
+    """
+    List all indexed documents in the vector database.
+
+    Returns:
+        Dictionary with document count and list of document names
+    """
+    try:
+        # Get all documents from collection
+        results = chroma_client.collection.get(include=["metadatas"])
+
+        # Extract unique document filenames
+        documents = set()
+        if results and results.get("metadatas"):
+            for meta in results["metadatas"]:
+                if meta and "filename" in meta:
+                    documents.add(meta["filename"])
+
+        doc_list = sorted(list(documents))
+        logger.info("Listed indexed documents", extra={"count": len(doc_list)})
+
+        return {
+            "count": len(doc_list),
+            "documents": doc_list
+        }
+
+    except Exception as e:
+        logger.error("Failed to list documents", extra={"error": str(e)})
+        raise HTTPException(status_code=500, detail=f"Failed to list documents: {str(e)}")
+
+
+@app.delete("/documents")
+async def clear_documents():
+    """
+    Clear all documents from the vector database.
+
+    Returns:
+        Dictionary with status and count of deleted documents
+    """
+    try:
+        # Get current count before deletion
+        count = chroma_client.collection.count()
+
+        # Delete the collection and recreate it
+        chroma_client.client.delete_collection("documents")
+        chroma_client.collection = chroma_client.client.get_or_create_collection(
+            name="documents",
+            metadata={"hnsw:space": "cosine"}
+        )
+
+        logger.info("Cleared all documents from database", extra={"deleted_count": count})
+
+        return {
+            "success": True,
+            "message": f"Cleared {count} chunks from database",
+            "deleted_count": count
+        }
+
+    except Exception as e:
+        logger.error("Failed to clear documents", extra={"error": str(e)})
+        raise HTTPException(status_code=500, detail=f"Failed to clear documents: {str(e)}")
+
+
 @app.get("/health")
 async def health():
     """Health check endpoint"""

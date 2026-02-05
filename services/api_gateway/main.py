@@ -34,6 +34,7 @@ config = Config.from_env()
 
 # Service URLs
 INGESTION_URL = os.getenv("INGESTION_URL", "http://localhost:8001")
+RETRIEVAL_URL = os.getenv("RETRIEVAL_URL", "http://localhost:8002")
 QUERY_URL = os.getenv("QUERY_URL", "http://localhost:8003")
 
 
@@ -136,6 +137,68 @@ async def query(
     except Exception as e:
         logger.error("Query failed", extra={"error": str(e)})
         raise HTTPException(status_code=500, detail=f"Query failed: {str(e)}")
+
+
+@app.get("/documents")
+async def list_documents(api_key: str = Depends(verify_api_key)):
+    """
+    List all indexed documents in the vector database.
+
+    Args:
+        api_key: API key for authentication
+
+    Returns:
+        Dictionary with document count and list of document names
+    """
+    try:
+        logger.info("Listing indexed documents")
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(f"{RETRIEVAL_URL}/documents")
+            response.raise_for_status()
+
+            result = response.json()
+            logger.info("Documents listed", extra={"count": result.get("count", 0)})
+
+            return result
+
+    except httpx.HTTPError as e:
+        logger.error("Retrieval service error", extra={"error": str(e)})
+        raise HTTPException(status_code=500, detail=f"Retrieval service error: {str(e)}")
+    except Exception as e:
+        logger.error("Failed to list documents", extra={"error": str(e)})
+        raise HTTPException(status_code=500, detail=f"Failed to list documents: {str(e)}")
+
+
+@app.delete("/documents")
+async def clear_documents(api_key: str = Depends(verify_api_key)):
+    """
+    Clear all documents from the vector database.
+
+    Args:
+        api_key: API key for authentication
+
+    Returns:
+        Dictionary with status and count of deleted documents
+    """
+    try:
+        logger.info("Clearing all indexed documents")
+
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.delete(f"{RETRIEVAL_URL}/documents")
+            response.raise_for_status()
+
+            result = response.json()
+            logger.info("Documents cleared", extra={"deleted_count": result.get("deleted_count", 0)})
+
+            return result
+
+    except httpx.HTTPError as e:
+        logger.error("Retrieval service error", extra={"error": str(e)})
+        raise HTTPException(status_code=500, detail=f"Retrieval service error: {str(e)}")
+    except Exception as e:
+        logger.error("Failed to clear documents", extra={"error": str(e)})
+        raise HTTPException(status_code=500, detail=f"Failed to clear documents: {str(e)}")
 
 
 @app.get("/health")

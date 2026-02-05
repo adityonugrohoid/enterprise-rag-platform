@@ -1,0 +1,275 @@
+EMPLOYEE HANDBOOK
+TechCorp Industries
+========================================
+Edition: 2026
+Effective Date: January 1, 2026
+
+
+WELCOME TO TECHCORP
+
+Welcome to TechCorp Industries! We're excited to have you join our team. This handbook outlines our policies, benefits, and expectations. Please read it carefully and reach out to HR with any questions.
+
+
+1. EMPLOYMENT BASICS
+
+1.1 Employment Classification
+-----------------------------
+- Full-time: 40+ hours/week, eligible for full benefits
+- Part-time: 20-39 hours/week, eligible for prorated benefits
+- Temporary: Fixed-term assignment, limited benefits
+- Contractor: Independent, no benefits through TechCorp
+
+1.2 At-Will Employment
+----------------------
+Employment at TechCorp is at-will, meaning either party can end the employment relationship at any time, with or without cause or notice.
+
+1.3 Equal Employment Opportunity
+--------------------------------
+TechCorp is committed to equal opportunity. We do not discriminate based on race, color, religion, sex, national origin, age, disability, veteran status, sexual orientation, gender identity, or any other protected characteristic.
+
+
+2. WORK HOURS AND ATTENDANCE
+
+2.1 Standard Work Hours
+-----------------------
+- Core hours: 10:00 AM - 3:00 PM (required presence for meetings)
+- Flexible hours: Start between 7:00 AM - 10:00 AM
+- Standard week: 40 hours for full-time employees
+
+2.2 Remote Work Policy
+----------------------
+Eligibility: After 90-day probationary period
+Options:
+- Hybrid: 3 days office, 2 days remote (default)
+- Full remote: By manager approval, based on role
+- Full office: Available for those who prefer
+
+Requirements for remote work:
+- Reliable internet connection (minimum 25 Mbps)
+- Dedicated workspace
+- Available during core hours
+- Attend in-person meetings when required
+
+2.3 Attendance and Punctuality
+------------------------------
+- Notify manager of absence by start of business day
+- Three unexcused absences in 90 days triggers review
+- Chronic lateness may result in disciplinary action
+
+2.4 Time Tracking
+-----------------
+Non-exempt employees must:
+- Clock in/out using the TimeKeeper system
+- Record all breaks and meal periods
+- Submit timesheets by Friday 5:00 PM
+- Report any discrepancies immediately
+
+
+3. COMPENSATION AND PAYROLL
+
+3.1 Pay Schedule
+----------------
+- Pay period: Bi-weekly (every other Friday)
+- Direct deposit: Required for all employees
+- Pay stubs: Available in HR portal
+
+3.2 Overtime
+------------
+Non-exempt employees:
+- Over 40 hours/week: 1.5x regular rate
+- Must be pre-approved by manager
+- No unauthorized overtime
+
+3.3 Performance Reviews
+-----------------------
+- Annual reviews: Each January
+- Mid-year check-in: Each July
+- Merit increases: Based on performance rating
+- Promotion cycles: Twice yearly (March, September)
+
+
+4. BENEFITS
+
+4.1 Health Insurance
+--------------------
+Eligibility: First of month following 30 days employment
+
+Plans offered:
+- PPO Plan: Higher premiums, lower deductibles, broad network
+- HDHP Plan: Lower premiums, HSA eligible, higher deductibles
+- Dental: Preventive 100%, basic 80%, major 50%
+- Vision: Annual exam covered, frames/contacts allowance
+
+Coverage levels:
+- Employee only
+- Employee + spouse
+- Employee + children
+- Family
+
+4.2 Retirement Benefits
+-----------------------
+401(k) Plan:
+- Eligibility: Immediate
+- Company match: 100% up to 4% of salary
+- Vesting: Immediate for employee contributions, 3-year cliff for match
+
+4.3 Paid Time Off (PTO)
+-----------------------
+| Tenure        | Annual PTO |
+|---------------|------------|
+| 0-2 years     | 15 days    |
+| 3-5 years     | 20 days    |
+| 6-10 years    | 25 days    |
+| 10+ years     | 30 days    |
+
+Additional:
+- Sick leave: 10 days/year
+- Personal days: 3 days/year
+- Holidays: 11 company holidays
+
+PTO Rules:
+- Requests submitted 2 weeks in advance
+- Manager approval required
+- Maximum carryover: 5 days to next year
+- No payout for unused sick leave
+
+4.4 Parental Leave
+------------------
+- Birth parent: 16 weeks paid leave
+- Non-birth parent: 8 weeks paid leave
+- Adoption: 12 weeks paid leave
+- Foster placement: 4 weeks paid leave
+
+4.5 Other Benefits
+------------------
+- Life insurance: 2x annual salary (company-paid)
+- Short-term disability: 60% salary up to 12 weeks
+- Long-term disability: 60% salary after 12 weeks
+- Employee Assistance Program (EAP): Free counseling
+- Tuition reimbursement: Up to $5,250/year
+- Professional development: $1,000/year for conferences/training
+
+
+5. WORKPLACE POLICIES
+
+5.1 Code of Conduct
+-------------------
+Employees are expected to:
+- Act with integrity and honesty
+- Treat colleagues with respect
+- Protect confidential information
+- Avoid conflicts of interest
+- Report concerns through proper channels
+
+5.2 Anti-Harassment Policy
+--------------------------
+TechCorp has zero tolerance for harassment of any kind.
+
+Harassment includes:
+- Unwelcome verbal, physical, or visual conduct
+- Creating hostile work environment
+- Quid pro quo situations
+- Retaliation against reporters
+
+To report harassment:
+- Contact HR directly
+- Use anonymous ethics hotline
+- Speak with any manager
+
+All reports investigated promptly and confidentially.
+
+5.3 Drug and Alcohol Policy
+---------------------------
+- Drug-free workplace maintained
+- Alcohol permitted only at company-sponsored events
+- Impairment at work prohibited
+- Testing may be required post-incident
+
+5.4 Dress Code
+--------------
+General: Business casual
+Tech teams: Casual (jeans, t-shirts acceptable)
+Client meetings: Business professional
+Remote: Professional appearance for video calls
+
+5.5 Social Media Policy
+-----------------------
+Personal use:
+- Clearly state views are your own
+- Don't disclose confidential information
+- Don't disparage company, colleagues, or clients
+
+Company accounts:
+- Only authorized personnel may post
+- Follow brand guidelines
+- Obtain approval for campaigns
+
+
+6. INFORMATION SECURITY
+
+6.1 Acceptable Use
+------------------
+Company equipment and systems are for business use. Limited personal use is acceptable if it doesn't interfere with work or violate policies.
+
+6.2 Password Requirements
+-------------------------
+- Minimum 12 characters
+- Include uppercase, lowercase, numbers, symbols
+- Change every 90 days
+- Never share passwords
+- Use password manager (company-provided)
+
+6.3 Data Protection
+-------------------
+- Classify data according to policy
+- Encrypt sensitive data
+- Lock screens when away
+- Report security incidents immediately
+- Complete annual security training
+
+6.4 Remote Work Security
+------------------------
+- Use company VPN for all work
+- Don't work on public WiFi without VPN
+- Secure home network
+- Keep work data on company devices
+
+
+7. LEAVING THE COMPANY
+
+7.1 Resignation
+---------------
+- Provide 2 weeks written notice (4 weeks for managers)
+- Submit to manager and HR
+- Complete exit checklist
+- Return company property
+
+7.2 Exit Process
+----------------
+1. Submit resignation letter
+2. Manager acknowledges and notifies HR
+3. Knowledge transfer period
+4. Exit interview with HR
+5. Final paycheck includes unused PTO
+6. Return equipment, badges, keys
+7. Benefits continue through end of month
+
+
+8. CONTACT INFORMATION
+
+Human Resources
+- Email: hr@techcorp.com
+- Phone: ext. 5000
+- Location: Building A, 2nd Floor
+
+Benefits Questions
+- Email: benefits@techcorp.com
+- Phone: ext. 5001
+
+Ethics Hotline (Anonymous)
+- Phone: 1-800-ETHICS
+- Web: ethics.techcorp.com
+
+IT Support
+- Email: helpdesk@techcorp.com
+- Phone: ext. 4000

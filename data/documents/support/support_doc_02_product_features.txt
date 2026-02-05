@@ -1,0 +1,232 @@
+CLOUDSYNC PRO - PRODUCT DOCUMENTATION
+Feature Guide and User Manual
+========================================
+
+1. PRODUCT OVERVIEW
+
+CloudSync Pro is an enterprise-grade file synchronization and backup solution designed for teams and businesses. It provides secure cloud storage, real-time collaboration, and comprehensive file management capabilities.
+
+System Requirements:
+- Windows 10/11 (64-bit)
+- macOS 11.0 or later
+- iOS 14.0 or later
+- Android 10.0 or later
+- Minimum 4GB RAM
+- 500MB free disk space for application
+
+
+2. CORE FEATURES
+
+2.1 Smart Sync
+--------------
+Smart Sync allows you to see all your files in File Explorer/Finder without downloading them. Files are downloaded on-demand when opened.
+
+File Status Icons:
+- Green checkmark: Available offline (downloaded)
+- Blue cloud: Online only (not downloaded)
+- Sync arrows: Currently syncing
+- Orange warning: Sync issue (click for details)
+
+To change file availability:
+- Right-click file > CloudSync > Make Available Offline
+- Or: Right-click > CloudSync > Free Up Space (remove local copy)
+
+2.2 Selective Sync
+------------------
+Choose which folders sync to each device:
+1. Click CloudSync icon in system tray
+2. Select Preferences > Sync
+3. Check/uncheck folders to sync
+4. Click Apply
+
+Use case: Sync only "Projects" folder to laptop, full sync to desktop
+
+2.3 File Versioning
+-------------------
+CloudSync keeps previous versions of files for 180 days (configurable).
+
+To restore a previous version:
+1. Right-click file > CloudSync > Version History
+2. Select version by date/time
+3. Click "Restore" or "Download"
+
+Version retention by plan:
+- Basic: 30 days
+- Professional: 180 days
+- Enterprise: Unlimited (or custom)
+
+2.4 File Recovery
+-----------------
+Deleted files are kept in Trash for 30 days before permanent deletion.
+
+To recover deleted files:
+1. Open CloudSync web interface
+2. Click "Deleted Files" in left sidebar
+3. Select files to recover
+4. Click "Restore" - files return to original location
+
+2.5 Sharing and Collaboration
+-----------------------------
+Share files or folders with internal team members or external guests.
+
+Share Types:
+a) View only - Recipients can view and download, not edit
+b) Edit access - Recipients can modify files
+c) Upload only - Recipients can add files but not view others (for collections)
+
+To share:
+1. Right-click file/folder > CloudSync > Share
+2. Enter email addresses
+3. Set permission level
+4. Optional: Set expiration date, password, download limit
+5. Click "Send Invitation"
+
+Shared Link Settings:
+- Expiration: 1 day to never
+- Password protection: Optional
+- Download limit: 1 to unlimited
+- Disable download: View only in browser
+
+
+3. SECURITY FEATURES
+
+3.1 Encryption
+--------------
+- In-transit: TLS 1.3 encryption for all data transfers
+- At-rest: AES-256 encryption on cloud servers
+- Zero-knowledge option: Client-side encryption (Enterprise plan)
+
+To enable client-side encryption:
+1. Settings > Security > Enable Zero-Knowledge Encryption
+2. Create encryption passphrase (CANNOT BE RECOVERED if lost)
+3. All new files encrypted before upload
+
+Warning: Zero-knowledge encrypted files cannot be previewed in browser
+
+3.2 Two-Factor Authentication (2FA)
+-----------------------------------
+Protect your account with 2FA:
+
+Setup:
+1. Account Settings > Security > Two-Factor Authentication
+2. Choose method: Authenticator app (recommended) or SMS
+3. Scan QR code or enter setup key
+4. Enter verification code to confirm
+5. Save backup codes in secure location
+
+Supported authenticator apps:
+- Google Authenticator
+- Microsoft Authenticator
+- Authy
+- 1Password
+
+3.3 Remote Wipe
+---------------
+If a device is lost or stolen, remotely remove CloudSync data:
+
+1. Log in to account.cloudsync.com
+2. Go to Security > Devices
+3. Find the device
+4. Click "Remote Wipe"
+5. Confirm action
+
+Note: Wipe executes when device next connects to internet
+
+3.4 Activity Logs
+-----------------
+Track all account activity:
+- File uploads, downloads, deletions
+- Sharing activity
+- Login attempts
+- Device connections
+
+Access: Account Settings > Security > Activity Log
+Retention: 1 year (Enterprise: custom)
+
+
+4. TEAM ADMINISTRATION
+
+4.1 User Management
+-------------------
+Admin Console: admin.cloudsync.com
+
+Add users:
+1. Admin Console > Users > Add User
+2. Enter email and name
+3. Assign to group (optional)
+4. Set storage quota
+5. Send invitation
+
+Bulk import via CSV:
+1. Admin Console > Users > Import
+2. Download template CSV
+3. Fill in user details
+4. Upload completed CSV
+
+4.2 Groups and Permissions
+--------------------------
+Create groups for easier permission management:
+
+Default groups:
+- Admins: Full account access
+- Users: Standard access
+- Guests: Limited external access
+
+Custom groups can have:
+- Storage quotas
+- Feature restrictions
+- Folder access rules
+- Sharing limitations
+
+4.3 Storage Quotas
+------------------
+Set per-user or per-group storage limits:
+
+1. Admin Console > Users > Select User
+2. Click "Edit Quota"
+3. Enter limit in GB
+4. Save changes
+
+Users receive warnings at 80% and 95% capacity.
+
+
+5. INTEGRATIONS
+
+5.1 Microsoft 365
+-----------------
+Enable Microsoft 365 integration:
+1. Admin Console > Integrations > Microsoft 365
+2. Sign in with Microsoft admin account
+3. Grant requested permissions
+4. Configure sync settings
+
+Features:
+- Access CloudSync files from Office apps
+- Co-edit Office documents in real-time
+- Automatic backup of OneDrive/SharePoint
+
+5.2 Google Workspace
+--------------------
+Enable Google Workspace integration:
+1. Admin Console > Integrations > Google Workspace
+2. Sign in with Google admin account
+3. Authorize CloudSync
+4. Select sync options
+
+Features:
+- Access CloudSync from Google Drive interface
+- Backup Google Drive content
+- Single sign-on support
+
+5.3 API Access
+--------------
+CloudSync API available for custom integrations:
+
+Documentation: developers.cloudsync.com
+Authentication: OAuth 2.0
+Rate limits: 1000 requests/hour (standard), 10000/hour (enterprise)
+
+Common API uses:
+- Automated backup workflows
+- Custom file management apps
+- Integration with internal tools

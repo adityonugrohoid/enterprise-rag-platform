@@ -44,7 +44,7 @@ echo ""
 
 # Copy Nginx configuration
 echo -e "${YELLOW}Configuring Nginx...${NC}"
-${SCP_CMD} "${SCRIPT_DIR}/../nginx/rag-platform.conf" ubuntu@${ELASTIC_IP}:/tmp/
+${SCP_CMD} "${SCRIPT_DIR}/../shared/nginx/rag-platform.conf" ubuntu@${ELASTIC_IP}:/tmp/
 
 # Update Nginx config with actual IP/domain
 if [ -n "$DOMAIN_NAME" ]; then

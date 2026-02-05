@@ -7,13 +7,16 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root / "frontend"))
 
-from config import PAGE_TITLE, PAGE_ICON, LAYOUT, PREDEFINED_QUESTIONS, get_all_questions_with_categories
+from config import PAGE_TITLE, PAGE_ICON, LAYOUT, PREDEFINED_QUESTIONS, USE_CASES, get_questions_by_use_case
 from utils import (
     scan_documents,
+    scan_documents_flat,
     upload_document,
     query_with_rag,
     query_direct_llm,
-    check_services_health
+    check_services_health,
+    get_indexed_document_count,
+    clear_indexed_documents
 )
 
 # Page configuration
@@ -97,99 +100,178 @@ if "last_query" not in st.session_state:
     st.session_state.last_query = None
 if "selected_question" not in st.session_state:
     st.session_state.selected_question = ""
+if "indexed_count" not in st.session_state:
+    st.session_state.indexed_count = 0
+if "selected_use_case" not in st.session_state:
+    st.session_state.selected_use_case = "all"
 
 # Sidebar - Document Management
 with st.sidebar:
     st.header("📚 Document Management")
-    
+
     # Service health check
     st.subheader("Service Status")
     health = check_services_health()
-    
+
     api_status = "🟢 Healthy" if health["api_gateway"] else "🔴 Unhealthy"
     ollama_status = "🟢 Healthy" if health["ollama"] else "🔴 Unhealthy"
-    
+
     st.write(f"**API Gateway:** {api_status}")
     st.write(f"**Ollama:** {ollama_status}")
-    
+
     if not all(health.values()):
         st.warning("⚠️ Some services are not available. Please start all backend services.")
-    
+
     st.divider()
-    
-    # Document selection
-    st.subheader("Available Documents")
-    available_docs = scan_documents()
-    
-    if not available_docs:
-        st.info("No documents found in data/documents/")
+
+    # Use Case / Field Selector
+    st.subheader("🎯 Select Use Case")
+
+    # Build options list
+    use_case_options = ["All Categories"]
+    use_case_keys = ["all"]
+    for key, info in USE_CASES.items():
+        use_case_options.append(f"{info['icon']} {info['label']}")
+        use_case_keys.append(key)
+
+    selected_idx = st.selectbox(
+        "Filter by use case:",
+        range(len(use_case_options)),
+        format_func=lambda i: use_case_options[i],
+        key="use_case_selector",
+        help="Select a use case to filter available documents"
+    )
+    st.session_state.selected_use_case = use_case_keys[selected_idx]
+
+    # Show description for selected use case
+    if st.session_state.selected_use_case != "all":
+        use_case_info = USE_CASES[st.session_state.selected_use_case]
+        st.caption(f"*{use_case_info['description']}*")
+
+    st.divider()
+
+    # Show indexed documents in database
+    st.subheader("📊 Indexed Documents")
+    st.session_state.indexed_count, indexed_docs = get_indexed_document_count()
+
+    if st.session_state.indexed_count > 0:
+        st.success(f"✅ {st.session_state.indexed_count} document(s) in vector database")
+        if indexed_docs:
+            with st.expander("View indexed documents"):
+                for doc in indexed_docs:
+                    st.write(f"• {doc}")
+        # Update session state to reflect actual indexed docs
+        st.session_state.ingested_docs = set(indexed_docs) if indexed_docs else set()
     else:
-        st.write(f"Found {len(available_docs)} document(s)")
-        
-        # Multiselect for documents
-        selected_docs = st.multiselect(
-            "Select documents to ingest:",
-            options=available_docs,
-            help="Choose one or more documents to ingest into the RAG system"
-        )
-        
-        # Show ingestion status
-        if st.session_state.ingested_docs:
-            st.success(f"✅ {len(st.session_state.ingested_docs)} document(s) currently ingested")
-            with st.expander("View ingested documents"):
-                for doc in st.session_state.ingested_docs:
-                    st.write(f"- {doc}")
-        
+        st.warning("⚠️ No documents indexed yet")
+
+    st.divider()
+
+    # Document selection
+    st.subheader("📁 Available Documents")
+    docs_by_category = scan_documents()
+
+    # Filter by selected use case
+    if st.session_state.selected_use_case == "all":
+        filtered_categories = docs_by_category
+    else:
+        filtered_categories = {
+            k: v for k, v in docs_by_category.items()
+            if k == st.session_state.selected_use_case
+        }
+
+    if not filtered_categories:
+        st.info("No documents found for selected use case")
+    else:
+        # Count total documents
+        total_docs = sum(len(docs) for docs in filtered_categories.values())
+        st.write(f"Found **{total_docs}** document(s) in **{len(filtered_categories)}** category(ies)")
+
+        # Build flat list with category prefix for selection
+        available_docs = []
+        for category, docs in sorted(filtered_categories.items()):
+            for doc in docs:
+                available_docs.append(f"{category}/{doc}")
+
+        # Filter out already indexed documents
+        not_indexed = [d for d in available_docs if d not in st.session_state.ingested_docs]
+
+        if not_indexed:
+            # Multiselect for documents not yet indexed
+            selected_docs = st.multiselect(
+                "Select documents to ingest:",
+                options=not_indexed,
+                format_func=lambda x: f"{USE_CASES.get(x.split('/')[0], {}).get('icon', '📄')} {x.split('/')[-1]}",
+                help="Choose one or more documents to ingest into the RAG system"
+            )
+        else:
+            selected_docs = []
+            st.info("✅ All available documents are already indexed")
+
         # Ingest button
         if st.button("🚀 Ingest Selected Documents", disabled=not selected_docs or not health["api_gateway"]):
             if selected_docs:
                 with st.spinner("Ingesting documents..."):
                     success_count = 0
                     error_count = 0
-                    
+
                     progress_bar = st.progress(0)
                     status_text = st.empty()
-                    
+
                     for i, doc in enumerate(selected_docs):
-                        status_text.text(f"Processing {doc}...")
+                        doc_name = doc.split('/')[-1]
+                        status_text.text(f"Processing {doc_name}...")
                         success, message, data = upload_document(doc)
-                        
+
                         if success:
                             success_count += 1
                             st.session_state.ingested_docs.add(doc)
                             chunks = data.get("chunks_created", 0)
-                            st.success(f"✅ {doc}: {chunks} chunks created")
+                            st.success(f"✅ {doc_name}: {chunks} chunks created")
                         else:
                             error_count += 1
-                            st.error(f"❌ {doc}: {message}")
-                        
+                            st.error(f"❌ {doc_name}: {message}")
+
                         progress_bar.progress((i + 1) / len(selected_docs))
-                    
+
                     status_text.empty()
                     progress_bar.empty()
-                    
+
                     if success_count > 0:
                         st.success(f"Successfully ingested {success_count} document(s)")
                     if error_count > 0:
                         st.warning(f"Failed to ingest {error_count} document(s)")
-    
+
     st.divider()
-    
-    # Clear ingestion status
-    if st.button("🗑️ Clear Ingestion Status"):
-        st.session_state.ingested_docs.clear()
-        st.rerun()
-    
+
+    # Clear database
+    st.subheader("🗑️ Database Management")
+    if st.session_state.indexed_count > 0:
+        st.warning(f"⚠️ This will permanently delete all {st.session_state.indexed_count} indexed documents")
+        if st.button("🗑️ Clear Vector Database", type="secondary"):
+            with st.spinner("Clearing database..."):
+                success, message, deleted = clear_indexed_documents()
+                if success:
+                    st.session_state.ingested_docs.clear()
+                    st.session_state.indexed_count = 0
+                    st.success(f"✅ {message}")
+                    st.rerun()
+                else:
+                    st.error(f"❌ {message}")
+    else:
+        st.info("Database is empty")
+
     # Information
     with st.expander("ℹ️ How to use"):
         st.markdown("""
         **Steps:**
         1. Check that services are healthy
-        2. Select documents to ingest
-        3. Click "Ingest Selected Documents"
-        4. Enter your query in the main area
-        5. Compare responses from both systems
-        
+        2. Select a use case to filter documents
+        3. Select documents to ingest
+        4. Click "Ingest Selected Documents"
+        5. Enter your query in the main area
+        6. Compare responses from both systems
+
         **Left Panel:** Direct LLM (no context)
         **Right Panel:** RAG-enhanced (with document context)
         """)
@@ -204,18 +286,26 @@ if not all(health.values()):
     st.stop()
 
 # Check if documents are ingested
-if not st.session_state.ingested_docs:
+if st.session_state.indexed_count == 0:
     st.info("💡 Please ingest documents from the sidebar to get started with RAG queries.")
 
 # Query input
 st.divider()
 
+# Get questions filtered by selected use case
+filtered_questions = get_questions_by_use_case(st.session_state.selected_use_case)
+
+# Show active filter indicator
+if st.session_state.selected_use_case != "all":
+    use_case_info = USE_CASES[st.session_state.selected_use_case]
+    st.info(f"{use_case_info['icon']} Showing questions for **{use_case_info['label']}** use case. Change filter in sidebar.")
+
 # Question selection section - compact layout
 col_cat, col_question, col_btn = st.columns([2, 5, 1])
 
 with col_cat:
-    # Category dropdown
-    categories = ["-- Select Topic --"] + list(PREDEFINED_QUESTIONS.keys()) + ["Custom Query"]
+    # Category dropdown - filtered by use case
+    categories = ["-- Select Topic --"] + list(filtered_questions.keys()) + ["Custom Query"]
     selected_category = st.selectbox(
         "Topic:",
         options=categories,
@@ -244,7 +334,7 @@ with col_question:
         selected_query = custom_query if custom_query else None
     else:
         # Show questions dropdown for selected category
-        questions = ["-- Select a question --"] + PREDEFINED_QUESTIONS[selected_category]
+        questions = ["-- Select a question --"] + filtered_questions[selected_category]
         selected_q = st.selectbox(
             "Question:",
             options=questions,
@@ -314,8 +404,8 @@ if st.session_state.last_query:
         st.markdown("### 🔍 RAG-Enhanced Response")
         st.markdown("<small style='color: #666;'>With retrieved document context</small>", unsafe_allow_html=True)
         
-        if not st.session_state.ingested_docs:
-            st.warning("⚠️ No documents ingested. The response will be based on general knowledge.")
+        if st.session_state.indexed_count == 0:
+            st.warning("⚠️ No documents indexed. The response will be based on general knowledge.")
         
         with st.spinner("Querying RAG system..."):
             success, response, metadata = query_with_rag(st.session_state.last_query)

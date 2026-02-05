@@ -94,6 +94,7 @@ fi
 echo -e "${YELLOW}[2/8] Checking Docker containers...${NC}"
 DOCKER_OUTPUT=$(${SSH_CMD} ubuntu@${ELASTIC_IP} "sudo docker compose -f /opt/rag-platform/docker-compose.yaml ps --format '{{.Name}}:{{.Status}}'" 2>/dev/null)
 
+# Expected containers for GPU + Ollama deployment
 EXPECTED_CONTAINERS=("chroma" "minio" "ollama" "redis")
 ALL_HEALTHY=true
 
@@ -209,15 +210,17 @@ fi
 # 7. Web UI Test
 # ============================================
 echo -e "${YELLOW}[7/8] Testing Web UI...${NC}"
-UI_RESPONSE=$(curl -s -w "\n%{http_code}" "${BASE_URL}/ui" 2>/dev/null)
+# Follow redirects (-L) and increase timeout for Streamlit
+UI_RESPONSE=$(curl -s -L -w "\n%{http_code}" --max-time 10 "${BASE_URL}/ui" 2>/dev/null)
 HTTP_CODE=$(echo "$UI_RESPONSE" | tail -n1)
 
-if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "302" ]; then
+# Accept 200, 301, 302 as valid (Nginx redirects to Streamlit)
+if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "301" ] || [ "$HTTP_CODE" = "302" ]; then
     record_test "Web UI" "true"
 else
-    # Try direct port as fallback
-    DIRECT_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://${ELASTIC_IP}:8501" 2>/dev/null)
-    if [ "$DIRECT_CODE" = "200" ]; then
+    # Try direct port as fallback with longer timeout
+    DIRECT_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "http://${ELASTIC_IP}:8501" 2>/dev/null)
+    if [ "$DIRECT_CODE" = "200" ] || [ "$DIRECT_CODE" = "301" ] || [ "$DIRECT_CODE" = "302" ]; then
         record_test "Web UI" "true"
         echo -e "         (Accessible via direct port 8501)"
     else

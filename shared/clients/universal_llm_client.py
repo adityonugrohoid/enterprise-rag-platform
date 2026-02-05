@@ -27,7 +27,7 @@ class UniversalLLMClient:
             self._ollama_host = host
             self._use_httpx = True
             self.client = None  # Will use httpx instead
-            self.model = model or os.getenv("LLM_MODEL", "llama3.2:3b")
+            self.model = model or os.getenv("LLM_MODEL", "llama3.1:8b")
             
         elif provider == "openai":
             self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -48,20 +48,30 @@ class UniversalLLMClient:
             self.model = model or "claude-3-5-sonnet-20241022"
             
         elif provider == "vertex":
-            # Use LiteLLM for unified interface
-            import litellm
-            self.client = litellm
-            self.model = f"vertex_ai/{model or 'gemini-1.5-flash'}"
+            # GCP Vertex AI with Gemini models
+            import vertexai
+            from vertexai.generative_models import GenerativeModel
+
+            project_id = os.getenv("GCP_PROJECT_ID")
+            location = os.getenv("GCP_LOCATION", "asia-southeast1")
+
+            if not project_id:
+                raise ValueError("GCP_PROJECT_ID environment variable is required for Vertex AI")
+
+            vertexai.init(project=project_id, location=location)
+            self.model = model or os.getenv("VERTEX_MODEL", "gemini-2.0-flash-001")
+            self.client = GenerativeModel(self.model)
 
         elif provider == "bedrock":
             # Amazon Bedrock - uses boto3
             import boto3
             self.client = boto3.client(
                 "bedrock-runtime",
-                region_name=os.getenv("AWS_REGION", "us-east-1")
+                region_name=os.getenv("AWS_REGION", "ap-southeast-1")
             )
-            # Default to Llama 3.1 8B - good balance of cost/quality
-            self.model = model or os.getenv("BEDROCK_MODEL", "meta.llama3-1-8b-instruct-v1:0")
+            # Default to Amazon Nova Micro via APAC inference profile
+            # Nova models require inference profile IDs, not model IDs directly
+            self.model = model or os.getenv("BEDROCK_MODEL", "apac.amazon.nova-micro-v1:0")
 
         logger.info(f"Initialized LLM client: {provider} with model {self.model}")
     
@@ -134,13 +144,44 @@ class UniversalLLMClient:
             return response["output"]["message"]["content"][0]["text"]
 
         elif self.provider == "vertex":
-            response = self.client.completion(
-                model=self.model,
-                messages=messages,
-                temperature=temperature,
-                max_tokens=max_tokens
-            )
-            return response.choices[0].message.content
+            from vertexai.generative_models import GenerationConfig, Content, Part
+
+            # Convert messages to Gemini format
+            system_instruction = None
+            gemini_contents = []
+
+            for msg in messages:
+                if msg["role"] == "system":
+                    system_instruction = msg["content"]
+                elif msg["role"] == "user":
+                    gemini_contents.append(Content(role="user", parts=[Part.from_text(msg["content"])]))
+                elif msg["role"] == "assistant":
+                    gemini_contents.append(Content(role="model", parts=[Part.from_text(msg["content"])]))
+
+            # Create a model with system instruction if provided
+            if system_instruction:
+                from vertexai.generative_models import GenerativeModel
+                model_with_system = GenerativeModel(
+                    self.model,
+                    system_instruction=system_instruction
+                )
+                response = model_with_system.generate_content(
+                    gemini_contents,
+                    generation_config=GenerationConfig(
+                        temperature=temperature,
+                        max_output_tokens=max_tokens
+                    )
+                )
+            else:
+                response = self.client.generate_content(
+                    gemini_contents,
+                    generation_config=GenerationConfig(
+                        temperature=temperature,
+                        max_output_tokens=max_tokens
+                    )
+                )
+
+            return response.text
         
         else:  # OpenAI-compatible (ollama, openai, azure)
             response = self.client.chat.completions.create(

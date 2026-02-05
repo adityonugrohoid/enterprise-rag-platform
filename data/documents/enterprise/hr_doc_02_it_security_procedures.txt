@@ -1,0 +1,326 @@
+IT SECURITY PROCEDURES
+TechCorp Industries - Internal Document
+========================================
+Classification: INTERNAL USE ONLY
+Version: 4.1
+Last Updated: January 2026
+
+
+1. ACCOUNT MANAGEMENT
+
+1.1 New Employee Onboarding
+---------------------------
+IT provisioning timeline (before start date):
+- T-5 days: HR submits new hire request via ServiceNow
+- T-3 days: IT creates accounts (AD, email, core applications)
+- T-2 days: Equipment prepared and configured
+- T-1 day: Manager reviews access requirements
+- Start day: Employee receives credentials and equipment
+
+Standard access includes:
+- Active Directory account
+- Microsoft 365 (email, Teams, SharePoint)
+- HR portal
+- TimeKeeper
+- VPN access
+
+Additional access requires:
+- Manager approval via ServiceNow
+- Security review for sensitive systems
+- Training completion for specialized tools
+
+1.2 Password Policy
+-------------------
+Requirements:
+- Minimum length: 14 characters
+- Complexity: 3 of 4 (uppercase, lowercase, numbers, symbols)
+- No dictionary words or personal information
+- No reuse of last 12 passwords
+- Expiration: 90 days
+- Lockout: 5 failed attempts = 30-minute lockout
+
+Password reset process:
+1. Self-service: passwordreset.techcorp.com
+2. Help desk: Call ext. 4000 with employee ID
+3. Manager verification required for sensitive accounts
+
+1.3 Multi-Factor Authentication (MFA)
+-------------------------------------
+Required for:
+- All remote access
+- Administrative accounts
+- Cloud applications
+- Financial systems
+
+Approved MFA methods:
+- Microsoft Authenticator app (preferred)
+- Hardware security key (FIDO2)
+- SMS (backup only)
+
+Setup: Go to mfa.techcorp.com within first day
+
+
+2. ACCESS CONTROL
+
+2.1 Principle of Least Privilege
+--------------------------------
+- Users receive minimum access needed for job function
+- Access reviewed quarterly by managers
+- Unused access removed after 90 days of inactivity
+- Privileged access requires additional approval
+
+2.2 Access Request Process
+--------------------------
+1. Submit request via ServiceNow > Access Request
+2. Specify: System, access level, business justification
+3. Manager approves via email link
+4. IT Security reviews (for sensitive systems)
+5. Access provisioned within 2 business days
+6. Requester notified via email
+
+2.3 Privileged Access
+---------------------
+Admin accounts require:
+- Separate account from daily-use account
+- Additional background check
+- Manager + Security team approval
+- Privileged Access Management (PAM) enrollment
+- Session recording for audit purposes
+- 30-day access review
+
+
+3. ENDPOINT SECURITY
+
+3.1 Company-Issued Devices
+--------------------------
+All devices must have:
+- Full disk encryption (BitLocker/FileVault)
+- Endpoint protection (CrowdStrike Falcon)
+- Mobile Device Management (Microsoft Intune)
+- Automatic updates enabled
+- Company DNS and web filtering
+
+Prohibited:
+- Disabling security software
+- Installing unauthorized software
+- Connecting to untrusted networks without VPN
+- Storing company data on personal devices
+
+3.2 Bring Your Own Device (BYOD)
+--------------------------------
+Personal devices may access:
+- Email via Outlook mobile app
+- Teams for messaging
+- Approved cloud applications
+
+Requirements:
+- Device registered in Intune
+- Screen lock enabled (6-digit minimum)
+- Remote wipe capability accepted
+- No jailbroken/rooted devices
+
+NOT permitted:
+- Downloading sensitive files
+- Accessing internal servers
+- Storing customer data
+
+3.3 Lost/Stolen Device Procedure
+--------------------------------
+1. Immediately report to IT Security: security@techcorp.com or ext. 4001
+2. IT initiates remote wipe
+3. File police report (if stolen)
+4. Submit incident form in ServiceNow
+5. Receive replacement device within 24-48 hours
+
+
+4. NETWORK SECURITY
+
+4.1 VPN Usage
+-------------
+Required for:
+- All remote work
+- Access to internal systems from outside office
+- Guest network usage within office
+
+VPN Setup:
+1. Download GlobalProtect from software.techcorp.com
+2. Configure server: vpn.techcorp.com
+3. Authenticate with AD credentials + MFA
+
+VPN will auto-connect when:
+- Device leaves corporate network
+- Accessing internal resources
+
+4.2 WiFi Networks
+-----------------
+Corporate WiFi: TechCorp-Secure
+- Requires AD credentials
+- Full network access
+- Auto-join configured on company devices
+
+Guest WiFi: TechCorp-Guest
+- For visitors and personal devices
+- Internet access only
+- No internal resource access
+- Requires daily registration
+
+4.3 Network Segmentation
+------------------------
+Networks are segmented by function:
+- Corporate: General employee access
+- Production: Server infrastructure
+- Development: Test and staging environments
+- IoT: Building systems, printers
+- Guest: Visitor internet access
+
+Cross-segment access requires firewall approval.
+
+
+5. DATA PROTECTION
+
+5.1 Data Classification
+-----------------------
+| Level        | Description                  | Examples                      |
+|--------------|------------------------------|-------------------------------|
+| Public       | Openly available            | Marketing materials, website  |
+| Internal     | For employees only           | Policies, org charts          |
+| Confidential | Business sensitive           | Financial data, strategies    |
+| Restricted   | Highly sensitive             | PII, PHI, credentials         |
+
+5.2 Handling Requirements
+-------------------------
+Public:
+- No special handling required
+
+Internal:
+- Share only within company
+- Don't post publicly
+
+Confidential:
+- Encrypt in transit and at rest
+- Share on need-to-know basis
+- Secure disposal required
+
+Restricted:
+- Encrypt always
+- Access logged and monitored
+- Approved storage locations only
+- Two-person authorization for bulk access
+
+5.3 Approved Storage Locations
+------------------------------
+Confidential/Restricted data must be stored in:
+- SharePoint (with appropriate permissions)
+- Approved cloud storage (CloudSync Enterprise)
+- Encrypted company devices
+- Approved databases
+
+NOT approved:
+- Personal cloud storage (Dropbox, personal Google Drive)
+- USB drives (without encryption and approval)
+- Email attachments (for bulk data)
+- Local unencrypted storage
+
+
+6. INCIDENT RESPONSE
+
+6.1 Reporting Security Incidents
+--------------------------------
+Report immediately to IT Security:
+- Email: security@techcorp.com
+- Phone: ext. 4001 (24/7 hotline)
+- ServiceNow: Security Incident category
+
+What to report:
+- Phishing emails (forward to phishing@techcorp.com)
+- Suspicious system behavior
+- Lost/stolen devices
+- Unauthorized access attempts
+- Data breaches or exposures
+- Malware or ransomware
+
+6.2 Incident Response Process
+-----------------------------
+1. Detection: User reports or security tools alert
+2. Triage: Security team assesses severity
+3. Containment: Isolate affected systems
+4. Investigation: Determine scope and cause
+5. Eradication: Remove threat
+6. Recovery: Restore normal operations
+7. Lessons learned: Document and improve
+
+6.3 Incident Severity Levels
+----------------------------
+| Severity | Response Time | Examples                            |
+|----------|---------------|-------------------------------------|
+| Critical | 15 minutes    | Active breach, ransomware           |
+| High     | 1 hour        | Compromised admin account           |
+| Medium   | 4 hours       | Malware on single system            |
+| Low      | 24 hours      | Policy violation, phishing attempt  |
+
+
+7. SECURITY TRAINING
+
+7.1 Required Training
+---------------------
+All employees:
+- Security Awareness Training: Annual, within 30 days of hire
+- Phishing Simulation: Quarterly
+- Data Handling Training: Annual
+
+Technical staff:
+- Secure Coding Training: Annual
+- Cloud Security: As applicable
+- Incident Response: Annual
+
+7.2 Phishing Response
+---------------------
+If you receive a suspicious email:
+1. Don't click any links
+2. Don't open attachments
+3. Don't reply
+4. Forward to phishing@techcorp.com
+5. Delete the email
+
+Signs of phishing:
+- Urgent or threatening language
+- Requests for credentials or payment
+- Mismatched sender address
+- Poor grammar/spelling
+- Suspicious links (hover to check)
+
+
+8. COMPLIANCE AND AUDIT
+
+8.1 Regular Audits
+------------------
+- Access reviews: Quarterly
+- Penetration testing: Annual
+- Vulnerability scanning: Weekly
+- Compliance audits: Annual (SOC 2, ISO 27001)
+
+8.2 Audit Log Retention
+-----------------------
+- Authentication logs: 2 years
+- Access logs: 1 year
+- Security events: 3 years
+- Administrative actions: 5 years
+
+
+9. CONTACT INFORMATION
+
+IT Help Desk
+- Email: helpdesk@techcorp.com
+- Phone: ext. 4000
+- Hours: 7 AM - 7 PM local time
+
+IT Security (24/7)
+- Email: security@techcorp.com
+- Phone: ext. 4001
+- Emergency: 1-800-SEC-TECH
+
+ServiceNow Portal
+- URL: service.techcorp.com
+- Self-service password reset
+- Access requests
+- Incident reporting

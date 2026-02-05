@@ -1,0 +1,228 @@
+DATA RETENTION AND DISPOSAL POLICY
+TechCorp Industries
+========================================
+Policy Number: POL-SEC-007
+Version: 3.2
+Last Reviewed: January 10, 2026
+Next Review: January 10, 2027
+Owner: Chief Information Security Officer
+
+
+1. PURPOSE
+
+This policy establishes guidelines for the retention and secure disposal of data to ensure compliance with legal requirements, support business operations, and minimize risk from retaining data longer than necessary.
+
+
+2. SCOPE
+
+This policy applies to:
+- All employees, contractors, and third-party processors
+- All data created, received, or maintained by TechCorp
+- All formats: electronic, paper, and other media
+- All locations: on-premises, cloud, and remote storage
+
+
+3. DEFINITIONS
+
+3.1 Personal Data: Information relating to an identified or identifiable natural person.
+
+3.2 Sensitive Data: Special category data including health information, financial records, government identifiers, and biometric data.
+
+3.3 Retention Period: The length of time data must be kept before disposal.
+
+3.4 Legal Hold: A directive to preserve data relevant to pending or anticipated litigation.
+
+3.5 Data Disposal: The secure destruction or anonymization of data at end of retention.
+
+
+4. RETENTION SCHEDULE
+
+4.1 Customer Data
+-----------------
+| Data Type                  | Retention Period           | Legal Basis              |
+|---------------------------|---------------------------|--------------------------|
+| Account information        | Account lifetime + 3 years | Contract fulfillment     |
+| Transaction records        | 7 years                    | Tax/financial regulations |
+| Support communications     | 5 years                    | Business operations      |
+| Service usage logs         | 2 years                    | Legitimate interest      |
+| Marketing consent records  | Consent period + 3 years   | GDPR compliance          |
+
+4.2 Employee Data
+-----------------
+| Data Type                  | Retention Period           | Legal Basis              |
+|---------------------------|---------------------------|--------------------------|
+| Employment records         | Employment + 7 years       | Labor law compliance     |
+| Payroll records           | 7 years                    | Tax regulations          |
+| Performance reviews        | Employment + 3 years       | Business operations      |
+| Training records          | Employment + 5 years       | Compliance evidence      |
+| Background checks         | Employment + 1 year        | Legal requirements       |
+
+4.3 Business Records
+--------------------
+| Data Type                  | Retention Period           | Legal Basis              |
+|---------------------------|---------------------------|--------------------------|
+| Contracts                  | Contract end + 10 years    | Statute of limitations   |
+| Financial statements       | Permanent                  | Corporate governance     |
+| Tax records               | 7 years                    | IRS requirements         |
+| Board minutes             | Permanent                  | Corporate governance     |
+| Audit reports             | 7 years                    | Regulatory compliance    |
+
+4.4 Technical Data
+------------------
+| Data Type                  | Retention Period           | Legal Basis              |
+|---------------------------|---------------------------|--------------------------|
+| System logs               | 1 year                     | Security monitoring      |
+| Security logs             | 3 years                    | Incident investigation   |
+| Backup data               | 90 days rolling            | Disaster recovery        |
+| Development data          | Project completion + 1 year | Business operations     |
+| Test data                 | Testing completion + 6 months | Quality assurance     |
+
+
+5. RETENTION REQUIREMENTS
+
+5.1 Minimum Retention
+---------------------
+Data must be retained for the minimum period required by:
+a) Applicable laws and regulations
+b) Contractual obligations
+c) Business operational needs
+d) This policy's retention schedule
+
+5.2 Maximum Retention
+---------------------
+Data should NOT be retained beyond the retention period unless:
+a) Subject to legal hold
+b) Required for ongoing legal proceedings
+c) Explicitly approved by Data Governance Committee
+
+5.3 Legal Holds
+---------------
+When litigation is pending or anticipated:
+1. Legal Department issues legal hold notice
+2. Affected data custodians acknowledge receipt
+3. Relevant data is preserved regardless of retention schedule
+4. Normal disposal suspended for hold-affected data
+5. Hold released only by Legal Department authorization
+
+
+6. DATA DISPOSAL PROCEDURES
+
+6.1 Electronic Data Disposal
+----------------------------
+Standard data:
+- Secure deletion using approved tools (minimum 3-pass overwrite)
+- Cryptographic erasure for encrypted storage
+
+Sensitive/confidential data:
+- NIST SP 800-88 compliant sanitization
+- Physical destruction for storage media when decommissioned
+- Certificate of destruction required
+
+Cloud data:
+- Follow cloud provider's secure deletion procedures
+- Verify deletion across all replicas and backups
+- Obtain confirmation from provider
+
+6.2 Paper Document Disposal
+---------------------------
+Standard documents:
+- Cross-cut shredding (minimum DIN Level P-4)
+
+Confidential documents:
+- Micro-cut shredding (DIN Level P-5 or higher)
+- Use approved shredding vendor for bulk disposal
+- Obtain certificate of destruction
+
+6.3 Hardware Disposal
+---------------------
+Before disposal or transfer of any hardware:
+1. Remove all data using approved sanitization methods
+2. Verify sanitization with IT Security
+3. Obtain sign-off from asset owner
+4. Document disposal in asset management system
+
+
+7. ROLES AND RESPONSIBILITIES
+
+7.1 Data Governance Committee
+-----------------------------
+- Approve retention schedule changes
+- Grant exceptions to retention periods
+- Review policy annually
+
+7.2 Department Heads
+--------------------
+- Ensure compliance within their departments
+- Identify data requiring special retention
+- Report retention issues to Data Governance
+
+7.3 IT Department
+-----------------
+- Implement technical controls for retention
+- Provide secure disposal tools and procedures
+- Maintain disposal documentation
+
+7.4 Legal Department
+--------------------
+- Issue and manage legal holds
+- Advise on regulatory retention requirements
+- Coordinate with external legal counsel
+
+7.5 All Employees
+-----------------
+- Follow retention schedule for their data
+- Report suspected retention violations
+- Comply with legal hold notices
+
+
+8. EXCEPTIONS
+
+Exceptions to this policy require:
+1. Written request to Data Governance Committee
+2. Business justification
+3. Risk assessment
+4. Legal review
+5. Documented approval
+6. Annual review of exception status
+
+
+9. COMPLIANCE AND ENFORCEMENT
+
+9.1 Monitoring
+--------------
+- Regular audits of retention compliance
+- Automated monitoring of storage systems
+- Spot checks of disposal procedures
+
+9.2 Violations
+--------------
+Violations may result in:
+- Corrective action and retraining
+- Disciplinary measures up to termination
+- Legal liability for negligent disposal
+
+9.3 Reporting
+-------------
+Report retention concerns to:
+- Email: data-governance@techcorp.com
+- Anonymous hotline: 1-800-ETHICS
+
+
+10. RELATED POLICIES
+
+- POL-SEC-001: Information Security Policy
+- POL-SEC-003: Data Classification Policy
+- POL-PRI-001: Privacy Policy
+- POL-LEG-002: Legal Hold Procedures
+- POL-IT-005: Backup and Recovery Policy
+
+
+11. REVISION HISTORY
+
+| Version | Date       | Author          | Changes                    |
+|---------|------------|-----------------|----------------------------|
+| 1.0     | 2020-03-15 | J. Smith        | Initial policy             |
+| 2.0     | 2022-01-10 | M. Johnson      | Added GDPR requirements    |
+| 3.0     | 2024-06-01 | R. Williams     | Updated retention schedule |
+| 3.1     | 2025-03-15 | R. Williams     | Added cloud data section   |
+| 3.2     | 2026-01-10 | A. Chen         | Annual review updates      |

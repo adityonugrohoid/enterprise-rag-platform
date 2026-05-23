@@ -2,11 +2,11 @@
 
 # Enterprise RAG Platform
 
-[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688.svg)](https://fastapi.tiangolo.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**Microservices RAG platform with multi-provider LLM, ChromaDB vectors, PII redaction, and Streamlit comparison UI**
+**Microservices RAG platform with multi-provider LLM routing, ChromaDB vectors, PII redaction, and Streamlit comparison UI**
 
 [Getting Started](#getting-started) | [Usage](#usage) | [Architecture](#architecture)
 
